@@ -1,0 +1,4 @@
+bin
+build
+node_modules
+deployed-addresses.js
