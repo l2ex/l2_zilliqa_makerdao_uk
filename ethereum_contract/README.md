@@ -1,8 +1,8 @@
 # Ethereum and QTUM one-2-n payment channel smart contracts
 
-This repository contains necessary infrasctucture for compiling and deploying one-2-n payment channel smart contracts. Implementation one-2-n payment channel smart contract can be found in file [contracts/L2Dex.sol](contracts/L2Dex.sol).
+This folder contains necessary infrasctucture for compiling and deploying one-2-n payment channel smart contracts. Implementation one-2-n payment channel smart contract can be found in file [contracts/L2Dex.sol](contracts/L2Dex.sol).
 
-# Compiling
+## Compiling
 
 To compile all presented smart contracts for both Ethereum and QTUM just run [compile.sh](compile.sh) script:
 
@@ -20,7 +20,7 @@ cd $GOPATH/src/github.com/ethereum/go-ethereum
 godep go install ./cmd/abigen
 ```
 
-# Deployed smart contracts (Ethereum Rinkeby network)
+## Deployed smart contracts (Ethereum Rinkeby network)
 
 ERC20 Token DAI: **0x5129bdC8482d601E38A678a2C78EA1fB4e58be9E**
 Channel: **0x59848c104012cE77cca6BAd9EF16d7278a1c112d**
