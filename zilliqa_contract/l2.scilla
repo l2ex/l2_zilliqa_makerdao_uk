@@ -1,0 +1,161 @@
+(* Layer 2 payment channels(1-to-N) for Scylla blockchain.
+   This part of l2.exchange - layer 2 multichain protocol for build fast and 
+   trustless crypto exchanges.
+   
+   Ivan Kocheshev,  Copyright (c) 2019 L2 llc.
+   
+   This file is free software: you can redistribute it and/or modify it under the
+   terms of the GNU General Public License as published by the Free Software
+   Foundation, either version 3 of the License, or (at your option) any later
+   version.
+   L2 is distributed in the hope that it will be useful, but WITHOUT ANY
+   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+   You should have received a copy of the GNU General Public License along with
+   L2.  If not, see <http://www.gnu.org/licenses/>.
+*)
+scilla_version 1
+
+(***************************************************)
+(*               Associated library                *)
+(***************************************************)
+library L2
+
+import intUtils
+
+let maker_changed  = Uint32 1
+let maker_hasnt_changed  = Uint32 2
+let close_channel_error  = Uint32 3
+let start_challange  = Uint32 4
+let withdraw_error = Uint32 5
+let got_funds_code  = Uint32 6
+
+(***********************************************************)
+(* Kocheshev Ivan t.me/devmanio                            *)
+(***********************************************************)
+(* Layer2 state channel for L2.exchange                    *)
+(***********************************************************)
+contract L2
+(owner: ByStr20,
+ttl_inc: BNum,
+chalange_ttl: BNum,
+owner_p_k: ByStr33)
+
+field val : Map ByStr20 Uint128 = Emp ByStr20 Uint128
+field ttl : Map ByStr20 BNum = Emp ByStr20 BNum
+field nonce : Map ByStr20 Uint32 = Emp ByStr20 Uint32
+field pub_key : Map ByStr20 ByStr33 = Emp ByStr20 ByStr33
+
+
+(* setup or update channel *)
+transition setupChanel()
+    blk <- & BLOCKNUMBER;
+    ttl[ttl] := blk + ttl_inc;
+    has_amount = builtin get val _sender;
+    match has_amount with
+    | Some a => 
+        let new_amount = a + _amount;
+        val[_sender] := new_amount;
+    | None =>
+        val[_sender] := _amount;
+        nonce[_sender] := Uint32 0;
+end
+(* 1. check _sender has channel*)
+(* 2. check signature of exchange*)
+(* 3. if 1&2 : event chalangeTtl starting*)
+transition closeChannelByTrader(oracle_nonce : Uint32, msg : String, hash : ByStr, sig : ByStr64)
+    let nonce_cutter_offset = Uint32 0
+    let nonce_cutter_length = Uint32 4
+    has_amount = builtin get val _sender;
+    match has_amount with
+    | None =>
+    e = {_eventname : "EmptyAmount"; code : close_channel_error};
+    | Some a =>
+        converted_oracle_nonce = builtin to_string oracle_nonce
+        match converted_oracle_nonce with
+        | None =>
+        e = {_eventname : "IncorectConvertedNonce"; code : close_channel_error};
+        | Some i_n => 
+            restored_oracle_nonce = builtin substr msg nonce_cutter_length nonce_cutter_offset
+            match restored_oracle_nonce with
+            | None =>
+            e = {_eventname : "IncorectRestoredNonce"; code : close_channel_error};
+            | Some r_n =>
+                is_input_nonces_correct = builtin eq i_n r_n
+                match is_input_nonces_correct with
+                | False =>
+                e = {_eventname : "NotEqalNonce"; code : close_channel_error};
+                | True =>
+                    state_nonce = builtin get nonce _sender;
+                    match state_nonce with
+                    | None =>
+                    e = {_eventname : "StateNonceEmpty"; code : close_channel_error};
+                    | Some s_n =>
+                    nonce_check = uintX_gt oracle_nonce s_n;
+                    match nonce_check with:
+                        | False =>
+                        e = {_eventname : "NonceIncorect"; code : close_channel_error};
+                        | True => 
+                        pub_key = builtin get pub_key owner;
+                        match pub_key with
+                            | None =>
+                            e = {_eventname : "CantFindPubKey"; code : close_channel_error};
+                            | Some p_k =>
+                            sig = builtin schnorr_verify p_k msg sig;
+                            match sig with
+                                | False =>
+                                e = {_eventname : "IncorectSignature"; code : close_channel_error};
+                                | True =>
+                                ttl[_sender] := chalange_ttl;
+                                e = {_eventname : "StartChallangeDelay"; code : start_challenge};
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    event e        
+end
+
+(* 1. check _sender is owner(exchange oracle) *)
+(* 2. check signature owner has channel *)
+(* 3. check ttl of channel is close to expire*)
+(* if 1&2&3 : fine _sender channel for 1ZIL*)
+(* TODO !!!*)
+transition chalange(msg : ByStr, sig : ByStr64)
+
+end
+
+(* unconditional withdraw, when ttl<BLOCKNUMBER *)
+transition withdraw()
+    blk <- & BLOCKNUMBER;
+    state_nonce = builtin get nonce _sender;
+    match state_nonce with
+        | None => 
+        e = {_eventname : "WithdrawError"; code : withdraw_error};
+        | Some s_n =>
+        is_chalange_over = uintX_gt blk s_n;
+        match is_chalange_over with
+            | False => 
+            e = {_eventname : "ChallengeIsNotOver"; code : withdraw_error};
+            | True =>
+            state_val = builtin get val _sender;
+            match state_val with
+                | None =>
+                e = {_eventname : "StateValumeIsEmpty"; code : withdraw_error};
+                | Some vl =>
+                msg = {_tag : "L2Withdraw"; _recipient : _sender; _amount : vl; code : got_funds_code};
+                msgs = one_msg msg;
+                send msgs 
+            end
+        end
+    end
+    event e
+end
+
+        
+  
+  
+
+
