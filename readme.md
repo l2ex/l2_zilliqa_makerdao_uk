@@ -2,7 +2,7 @@
 
 Includes the following components:
 
-1. Order book
+1. Order book engine
 2. Api gateway
 3. payment channel contract for  Zilliqa blockchain
 4. payment channel contract for  Ethereum blockchain, also including a credit service with fractional-reserve for market makers based on DAI stablecoin(detailed in the docs)
