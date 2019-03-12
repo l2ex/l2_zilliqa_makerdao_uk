@@ -42,7 +42,11 @@ func testUpdateChannelMessageSignature() {
 	data := utils.HexToBytesUnsafe("792db58835893e047189f4b6639eda85ac34113f33c21af6915e14f376a355c41def6610558d311bfffffffffffffffffffffffffffffffffffffffffffffffffffffffff75772800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000")
 	privateKey, _ := ecc.NewPrivateKeyFromString("26655fe5ccb52d03c5f6d31b2676ad525a77ada04ffa33fa2878d0ed261bf2e4", blockchains.EthereumMain)
 	signature, _ := ecc.SignData(data, privateKey, blockchains.EthereumMain)
+	r, s, v := signature.GetNumbers()
 	fmt.Printf("L2 update channel signing: %s\n", signature.GetString())
+	fmt.Printf("L2 update channel signing (v): %d\n", v)
+	fmt.Printf("L2 update channel signing (r): %#x\n", r)
+	fmt.Printf("L2 update channel signing (s): %#x\n", s)
 	if signature.GetString() != etalon {
 		fmt.Printf("ERROR: Wrong result received during update channel message signing\n")
 	}
