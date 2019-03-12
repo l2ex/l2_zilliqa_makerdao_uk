@@ -12,11 +12,11 @@ import (
 )
 
 func main() {
-	testUpdateChannelMessageSerialization()
-	testUpdateChannelMessageSignature()
+	exampleUpdateChannelMessageSerialization()
+	exampleUpdateChannelMessageSignature()
 }
 
-func testUpdateChannelMessageSerialization() {
+func exampleUpdateChannelMessageSerialization() {
 	etalon := "792db58835893e047189f4b6639eda85ac34113f33c21af6915e14f376a355c41def6610558d311bfffffffffffffffffffffffffffffffffffffffffffffffffffffffff75772800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000"
 	args := common.L2ArgsUpdateChannel{
 		Owner: utils.HexToBytesUnsafe("792db58835893e047189f4b6639eda85ac34113f"),
@@ -27,8 +27,10 @@ func testUpdateChannelMessageSerialization() {
 		Free: big.NewInt(0),
 	}
 	l2 := new(ethereum.L2)
-	data, _ := l2.SerializeMessageUC(args)
-	args2, _ := l2.DeserializeMessageUC(data)
+	data, err := l2.SerializeMessageUC(args)
+	handleError(err)
+	args2, err := l2.DeserializeMessageUC(data)
+	handleError(err)
 	fmt.Printf("L2 update channel arguments: %+v\n", args)
 	fmt.Printf("L2 update channel serialized: %#x\n", data)
 	fmt.Printf("L2 update channel deserialized: %+v\n", args2)
@@ -37,11 +39,13 @@ func testUpdateChannelMessageSerialization() {
 	}
 }
 
-func testUpdateChannelMessageSignature() {
+func exampleUpdateChannelMessageSignature() {
 	etalon := "1cb74bb12e78a0dfae6d09d404637bc75abf51bbd5e92e0d52860fe3ca3b2c0e825069fdb6641571e436f1ab9ba329b00e7f3f02634b3856107f9cc87e3ce2ba2c"
 	data := utils.HexToBytesUnsafe("792db58835893e047189f4b6639eda85ac34113f33c21af6915e14f376a355c41def6610558d311bfffffffffffffffffffffffffffffffffffffffffffffffffffffffff75772800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000")
-	privateKey, _ := ecc.NewPrivateKeyFromString("26655fe5ccb52d03c5f6d31b2676ad525a77ada04ffa33fa2878d0ed261bf2e4", blockchains.EthereumMain)
-	signature, _ := ecc.SignData(data, privateKey, blockchains.EthereumMain)
+	privateKey, err := ecc.NewPrivateKeyFromString("26655fe5ccb52d03c5f6d31b2676ad525a77ada04ffa33fa2878d0ed261bf2e4", blockchains.EthereumMain)
+	handleError(err)
+	signature, err := ecc.SignData(data, privateKey, blockchains.EthereumMain)
+	handleError(err)
 	r, s, v := signature.GetNumbers()
 	fmt.Printf("L2 update channel signing: %s\n", signature.GetString())
 	fmt.Printf("L2 update channel signing (v): %d\n", v)
