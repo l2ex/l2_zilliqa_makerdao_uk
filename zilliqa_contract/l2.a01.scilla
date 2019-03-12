@@ -1,10 +1,11 @@
-
-scilla_version 1
+scilla_version 0
 
 (***************************************************)
 (*               Associated library                *)
 (***************************************************)
+
 import IntUtils
+
 library L2
 
 let maker_changed  = Uint32 1
@@ -13,13 +14,14 @@ let close_channel_error  = Uint32 3
 let start_challange  = Uint32 4
 let withdraw_error = Uint32 5
 let got_funds_code  = Uint32 6
+let nonce_cutter_offset = Uint32 0
 
 (***********************************************************)
 (* Layer2 state channel for L2 Exchange Protocol           *)
 (***********************************************************)
 contract L2
 (owner: ByStr20,
-ttl_inc: BNum,
+ttl_inc: Uint32,
 chalange_ttl: BNum,
 owner_p_k: ByStr33)
 
@@ -38,64 +40,36 @@ transition setupChanel()
     match has_amount with
     | Some a => 
         new_amount = builtin add a _amount;
-        val[_sender] := new_amount;
+        val[_sender] := new_amount
     | None =>
         val[_sender] := _amount;
         zero = Uint32 0;
         nonce[_sender] := zero
     end
 end
-(* 1. check _sender has channel
-   2. check signature of exchange
-   3. if 1&2 : event chalangeTtl starting 
-   msg - composite off-chain order message contains nonce and trade details, 
-   signed by exchange oracle *)
+
 transition closeChannelByTrader(msg : String, hash : ByStr, sig : ByStr64)
-    let nonce_cutter_offset = Uint32 0
-    let nonce_cutter_length = Uint32 4
-    has_amount = builtin get val _sender;
-    match has_amount with
-    | None =>
-    e = {_eventname : "EmptyAmount"; code : close_channel_error};
-    | Some a =>
-        restored_oracle_nonce = builtin substr msg nonce_cutter_length nonce_cutter_offset
-        match restored_oracle_nonce with
-        | None =>
-        e = {_eventname : "IncorectRestoredNonce"; code : close_channel_error};
-        | Some r_n =>
-            converted_oracle_nonce = builtin to_uint32 r_n
-            match converted_oracle_nonce with
-            | None =>
-            e = {_eventname : "IncorectConvertedNonce"; code : close_channel_error};
-            | Some c_n => 
-                state_nonce = builtin get nonce _sender;
-                match state_nonce with
-                | None =>
-                e = {_eventname : "StateNonceEmpty"; code : close_channel_error};
-                | Some s_n =>
-                    is_input_nonces_correct = nonce_check = uintX_gt c_n s_n; 
-                    match is_input_nonces_correct with
-                    |False =>
-                    e = {_eventname : "NonceIncorect"; code : close_channel_error};
-                    |True =>
-                        pub_key = builtin get pub_key owner;
-                        match pub_key with
-                        | None =>
-                        e = {_eventname : "CantFindPubKey"; code : close_channel_error};
-                        | Some p_k =>
-                        sig = builtin schnorr_verify p_k msg sig;
-                        match sig with
-                            | False =>
-                            e = {_eventname : "IncorectSignature"; code : close_channel_error};
-                            | True =>
-                            ttl[_sender] := chalange_ttl;
-                            e = {_eventname : "StartChallangeDelay"; code : start_challenge};
-                        end
-                    end
-                end
+    
+    has_amount <- val[_sender];
+    
+    restored_oracle_nonce = builtin substr msg start_challange nonce_cutter_offset;
+    converted_oracle_nonce = builtin to_uint32 restored_oracle_nonce;
+    state_nonce <- nonce[_sender];
+    (*is_input_nonces_correct = Uint32_gt converted_oracle_nonce state_nonce; 
+        match is_input_nonces_correct with
+        |False =>
+        e = {_eventname : "NonceIncorect"; code : close_channel_error};
+        |True => *)
+        pub_key <- pub_key[owner];
+        sig = builtin schnorr_verify p_k msg sig;
+            match sig with
+            | False =>
+            e = {_eventname : "IncorectSignature"; code : close_channel_error};
+            | True =>
+            ttl[_sender] := chalange_ttl;
+            e = {_eventname : "StartChallangeDelay"; code : start_challenge};
             end
         end
-    end
     event e        
 end
 
