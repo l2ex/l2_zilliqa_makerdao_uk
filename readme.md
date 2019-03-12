@@ -13,7 +13,7 @@ Includes the following components:
 In this small brief, I tried to explain as much as possible the principles of the operation of the L2 protocol and its main difference from the existing solutions.
 
 ### DEX vs CEX
-The main difference between DEX and CEX is the matching of orders (matching) and deposit storage (the custodial system), CEX has these systems running off-line, and therefore all risks are on the stock exchange, the realization of which often leads to default of such stock exchanges. As a response to this risk, DEX arose.
+The main difference between DEX and CEX is the matching of orders (matching) and deposit storage (the custodial system), CEX's has these systems running off-chain, and therefore all risks are concentrated in them, the realization of which often leads to default of such exchanges. As a response to this risk, rise DEX's.
 
 ### DEX family
 
