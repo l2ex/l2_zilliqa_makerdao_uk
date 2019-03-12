@@ -1,4 +1,4 @@
-# Simple implementation of L2 exchange protocol with partial reservation of special market participants - market makers.
+# Simple implementation of L2 exchange protocol with fractional-reserve service for special market participants - market makers.
 
 Includes the following components:
 
@@ -71,7 +71,7 @@ Thus, in L2, a problem was solved that was haunting all DEX - **performance and 
 
 > 1. The seller (maker) makes an order, signs it and sends it to the exchange server.
 > 2. The buyer (taker) makes an order, signs it and sends it to the exchange server.
-> 3. The exchange advances the order, the filled order is signed by the exchange and sent to the tanker and the maker.
+> 3. The exchange advances the order, the filled order is signed by the exchange and sent to the taker and the maker.
 > 4. To update the deposit, the trader (maker / taker) sends the last trade received from the exchange to the channel contract.
 
 
