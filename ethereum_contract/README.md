@@ -19,3 +19,8 @@ go get -u github.com/ethereum/go-ethereum
 cd $GOPATH/src/github.com/ethereum/go-ethereum
 godep go install ./cmd/abigen
 ```
+
+# Deployed smart contracts (Ethereum Rinkeby network)
+
+ERC20 Token DAI: **0x5129bdC8482d601E38A678a2C78EA1fB4e58be9E**
+Channel: **0x59848c104012cE77cca6BAd9EF16d7278a1c112d**

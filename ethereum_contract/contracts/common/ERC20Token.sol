@@ -56,7 +56,7 @@ contract ERC20Token is ERC20 {
         return true;
     }
 
-    function mint(address _receiver, uint256 _value) internal {
+    function mint(address _receiver, uint256 _value) public {
         require(_receiver != address(0));
         require(_value > 0);
         balanceOf[_receiver] = balanceOf[_receiver].add(_value);
@@ -64,7 +64,7 @@ contract ERC20Token is ERC20 {
         emit Transfer(address(0), _receiver, _value);
     }
 
-    function burn(uint256 _value) internal {
+    function burn(uint256 _value) public {
         require(_value > 0 && _value <= balanceOf[msg.sender]);
         balanceOf[msg.sender] = balanceOf[msg.sender].sub(_value);
         totalSupply = totalSupply.sub(_value);
