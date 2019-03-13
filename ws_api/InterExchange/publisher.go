@@ -17,6 +17,26 @@ type PUB struct {
 	Buffer *atomic.Buffer
 }
 
+var pubConf = struct{
+	AeronPrefix     *string
+	ProfilerEnabled *bool
+	DriverTo        *int64
+	StreamID        *int
+	Channel         *string
+	Messages        *int
+	Size            *int
+	LoggingOn       *bool
+}{
+	AeronPrefix:       flag.String("p", aeron.DefaultAeronDir, "root directory for aeron driver file"),
+	ProfilerEnabled:   flag.Bool("prof", false, "enable CPU profiling"),
+	DriverTo:          flag.Int64("to", 1000000, "driver liveliness timeout in ms"),
+	StreamID:          flag.Int("sid", 1024, "default streamId to use"),
+	Channel:           flag.String("chan", "aeron:udp?endpoint=10.10.0.124:40123", "default channel to subscribe to"),
+	Messages:          flag.Int("m", 1000000, "number of messages to send"),
+	Size:              flag.Int("len", 256, "messages size"),
+	LoggingOn:         flag.Bool("l", false, "enable logging"),
+}
+
 func check(e error) {
 	if e != nil {
 		panic(e)
@@ -26,7 +46,7 @@ func check(e error) {
 func (publisher *PUB)Connect()  {
 	flag.Parse()
 
-	if !*Config.LoggingOn {
+	if !*pubConf.LoggingOn {
 		logging.SetLevel(logging.INFO, "aeron")
 		logging.SetLevel(logging.INFO, "memmap")
 		logging.SetLevel(logging.INFO, "driver")
@@ -36,8 +56,8 @@ func (publisher *PUB)Connect()  {
 		logging.SetLevel(logging.INFO, "rb")
 	}
 
-	to := time.Duration(time.Millisecond.Nanoseconds() * *Config.DriverTo)
-	ctx := aeron.NewContext().AeronDir(*Config.AeronPrefix).MediaDriverTimeout(to)
+	to := time.Duration(time.Millisecond.Nanoseconds() * *pubConf.DriverTo)
+	ctx := aeron.NewContext().AeronDir(*pubConf.AeronPrefix).MediaDriverTimeout(to)
 
 	var err error
 	publisher.Transport, err = aeron.Connect(ctx)
