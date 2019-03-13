@@ -160,6 +160,7 @@ func main() {
 			firstLine = false
 			continue
 		}
+		time.Sleep(time.Millisecond * 20)
 		for i := 0; i < len(line); i++ {
 			ord := strings.Split(line[i], ";")
 			switch ord[5] {

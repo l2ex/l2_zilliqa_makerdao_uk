@@ -15,9 +15,8 @@ import (
 )
 
 var Addr = flag.String("addr", "localhost:2054", "http service address")
-
 var upgrader = websocket.Upgrader{} // use default options
-
+/* Internal UDP transport */
 var sub = InterExchange.SUB{}
 var pub = InterExchange.PUB{}
 
@@ -30,7 +29,7 @@ func apiStream(w http.ResponseWriter, r *http.Request) {
 	}
 	defer c.Close()
 	for {
-		mt , message, err := c.ReadMessage()
+		mt, message, err := c.ReadMessage()
 		if err != nil {
 			log.Println("read:", err)
 			break
@@ -43,7 +42,7 @@ func apiStream(w http.ResponseWriter, r *http.Request) {
 
 		}
 
-		go push2WS(*c , mt)
+		go push2WS(*c, mt)
 
 	}
 }
@@ -52,18 +51,16 @@ func main() {
 	sub.Connect()
 	pub.Connect()
 
-
 	flag.Parse()
 	log.SetFlags(0)
 	http.HandleFunc("/", apiStream)
 	log.Fatal(http.ListenAndServe(*Addr, nil))
 
-
-	defer 		sub.Disconnect()
-	defer 		pub.Disconnect()
+	defer sub.Disconnect()
+	defer pub.Disconnect()
 }
 
-func push2ME(msg []byte)  {
+func push2ME(msg []byte) {
 	ret := pub.Publication.Offer(pub.Buffer, 0, int32(len(msg)), nil)
 	switch ret {
 	case aeron.NotConnected:
@@ -84,32 +81,30 @@ func push2ME(msg []byte)  {
 
 func push2WS(c websocket.Conn, mt int) {
 
-		subscription := <-sub.Transport.AddSubscription(*InterExchange.Config.APIChannel, int32(*InterExchange.Config.ApiStreamID))
-		defer subscription.Close()
-		log.Printf("Subscription found %v", subscription)
+	subscription := <-sub.Transport.AddSubscription(*InterExchange.Config.APIChannel, int32(*InterExchange.Config.ApiStreamID))
+	defer subscription.Close()
+	log.Printf("Subscription found %v", subscription)
 
-		counter := 1
-		handler := func(buffer *atomic.Buffer, offset int32, length int32, header *logbuffer.Header) {
-			bytes := buffer.GetBytesArray(offset, length)
-			//fmt.Printf("%8.d: Gots me a fragment offset:%d length: %d payload: %s\n", counter, offset, length, string(bytes))
-			sign( bytes )
-			err := c.WriteMessage( mt, bytes)
-			if err != nil {
-				log.Println("feed:", err)
-			}
-			counter++
+	counter := 1
+	handler := func(buffer *atomic.Buffer, offset int32, length int32, header *logbuffer.Header) {
+		bytes := buffer.GetBytesArray(offset, length)
+		//fmt.Printf("%8.d: Gots me a fragment offset:%d length: %d payload: %s\n", counter, offset, length, string(bytes))
+		sign(bytes)
+		err := c.WriteMessage(mt, bytes)
+		if err != nil {
+			log.Println("feed:", err)
 		}
+		counter++
+	}
 
-		idleStrategy := idlestrategy.Sleeping{SleepFor: time.Millisecond}
+	idleStrategy := idlestrategy.Sleeping{SleepFor: time.Millisecond}
 
-		for {
-			fragmentsRead := subscription.Poll(handler, 10)
-			idleStrategy.Idle(fragmentsRead)
-		}
+	for {
+		fragmentsRead := subscription.Poll(handler, 10)
+		idleStrategy.Idle(fragmentsRead)
+	}
 
-
-
-		}
+}
 
 func sign(feed []byte) {
 	//inspect what here and how sign?
@@ -118,47 +113,46 @@ func sign(feed []byte) {
 	case 'S':
 		log.Printf("ProcessSystemEventMessage")
 	case 'R':
-		log.Printf( "ProcessStockDirectoryMessage")
+		log.Printf("ProcessStockDirectoryMessage")
 	case 'H':
-		log.Printf( "ProcessStockTradingActionMessage")
+		log.Printf("ProcessStockTradingActionMessage")
 	case 'Y':
-		log.Printf( "ProcessRegSHOMessage")
+		log.Printf("ProcessRegSHOMessage")
 	case 'L':
-		log.Printf( "ProcessMarketParticipantPositionMessage")
+		log.Printf("ProcessMarketParticipantPositionMessage")
 	case 'V':
-		log.Printf( "ProcessMWCBDeclineMessage")
+		log.Printf("ProcessMWCBDeclineMessage")
 	case 'W':
-		log.Printf( "ProcessMWCBStatusMessage")
+		log.Printf("ProcessMWCBStatusMessage")
 	case 'K':
-		log.Printf( "ProcessIPOQuotingMessage")
+		log.Printf("ProcessIPOQuotingMessage")
 	case 'A':
-		log.Printf( "ProcessAddOrderMessage")
+		log.Printf("ProcessAddOrderMessage")
 	case 'F':
-		log.Printf( "ProcessAddOrderMPIDMessage")
+		log.Printf("ProcessAddOrderMPIDMessage")
 	case 'E':
-		log.Printf( "ProcessOrderExecutedMessage")
+		log.Printf("ProcessOrderExecutedMessage")
 	case 'C':
-		log.Printf( "ProcessOrderExecutedWithPriceMessage")
+		log.Printf("ProcessOrderExecutedWithPriceMessage")
 	case 'X':
-		log.Printf( "ProcessOrderCancelMessage")
+		log.Printf("ProcessOrderCancelMessage")
 	case 'D':
-		log.Printf( "ProcessOrderDeleteMessage")
+		log.Printf("ProcessOrderDeleteMessage")
 	case 'U':
-		log.Printf( "ProcessOrderReplaceMessage")
+		log.Printf("ProcessOrderReplaceMessage")
 	case 'P':
-		log.Printf( "ProcessTradeMessage")
+		log.Printf("ProcessTradeMessage")
 	case 'Q':
-		log.Printf( "ProcessCrossTradeMessage")
+		log.Printf("ProcessCrossTradeMessage")
 	case 'B':
-		log.Printf( "ProcessBrokenTradeMessage")
+		log.Printf("ProcessBrokenTradeMessage")
 	case 'I':
-		log.Printf( "ProcessNOIIMessage")
+		log.Printf("ProcessNOIIMessage")
 	case 'N':
-		log.Printf( "ProcessRPIIMessage")
+		log.Printf("ProcessRPIIMessage")
 	default:
-		log.Printf( "ProcessUnknownMessage")
+		log.Printf("ProcessUnknownMessage")
 
 	}
-
 
 }
