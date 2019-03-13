@@ -156,14 +156,6 @@ func main() {
 	defer publication.Close()
 	log.Printf("Publication found %v", publication)
 
-	fInput, err := os.Open("/Users/im/gitlab/itch5parser/sample.itch")
-	if err != nil {
-		logger.Fatalf("Cant open message file")
-	}
-	defer fInput.Close()
-
-	fmt.Printf("streaming to aeron udp : %s\n", *ExamplesConfig.Channel)
-
 	// total number of all messages
 	var total uint64
 	start := time.Now()
