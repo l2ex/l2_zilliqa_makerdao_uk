@@ -18,26 +18,24 @@ package main
 
 import (
 	"bufio"
-	//"encoding/binary"
+	"encoding/binary"
 	"encoding/csv"
 	"flag"
 	"fmt"
+	"io"
+	"log"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/lirm/aeron-go/aeron"
 	"github.com/lirm/aeron-go/aeron/atomic"
-	"io"
-	"strings"
-
-	//"github.com/lirm/aeron-go/examples"
-
-	//"github.com/lirm/aeron-go/examples"
 	"github.com/op/go-logging"
-	"log"
-	"os"
-	"time"
 )
 
 var logger = logging.MustGetLogger("basic_publisher")
-
 
 var ExamplesConfig = struct {
 	AeronPrefix     *string
@@ -59,8 +57,6 @@ var ExamplesConfig = struct {
 	flag.Bool("l", false, "enable logging"),
 }
 
-
-
 func check(e error) {
 	if e != nil {
 		panic(e)
@@ -68,44 +64,54 @@ func check(e error) {
 }
 
 func parseO(raw []string) []byte {
-	//func (bigEndian) String() string { return "BigEndian" }
-	nmsgO := make([]byte, 43)
-	nmsgO[0]	= 'O' //orderType
-	copy(nmsgO[1:4], []byte(raw[3])) //orderID
-	copy(nmsgO[5:6], []byte("C")) //account type
-	copy(nmsgO[6:10], []byte("12"))  //account ID
-	copy(nmsgO[10:11], []byte(raw[2])) //Buy/Sell
-	copy(nmsgO[12:20], []byte(raw[7])) //vol
-	copy(nmsgO[19:23], []byte("HUY")) //orderbookID
-	var replacer = strings.NewReplacer(" ", ",", "\t", ",")
-	str := replacer.Replace(raw[6])
-	copy(nmsgO[23:27] , []byte(str)) //price int
-	//nmsgO[27:4]
-	copy(nmsgO[31:35],  []byte("123")) //clienID
-	//nmsgO[35:8]	minQTY
+
+	quantity, _ := strconv.ParseUint(raw[7], 10, 64)
+	price, _ := strconv.ParseFloat(raw[6], 64)
+	orderID, _ := strconv.ParseUint(raw[4], 10, 32)
+	accountID, _ := strconv.ParseUint("12", 10, 32)
+	orderbookID := uint32(0)
+	switch raw[1] {
+	case "USD000UTSTOM":
+		orderbookID = 1
+	case "EUR_RUB__TOM":
+		orderbookID = 2
+	}
+
+	nmsgO := make([]byte, 45)
+	binary.BigEndian.PutUint16(nmsgO[:2], 43)                                // message size
+	nmsgO[2] = 'O'                                                           // type
+	binary.BigEndian.PutUint32(nmsgO[3:7], uint32(orderID))                  // order ID
+	nmsgO[7] = 'C'                                                           // account type
+	binary.BigEndian.PutUint32(nmsgO[8:12], uint32(accountID))               // account ID
+	nmsgO[12] = raw[2][0]                                                    // order side (buy/sell)
+	binary.BigEndian.PutUint64(nmsgO[13:21], quantity)                       // quantity
+	binary.BigEndian.PutUint32(nmsgO[21:25], orderbookID)                    // orderbook ID
+	binary.BigEndian.PutUint32(nmsgO[25:29], uint32(math.Round(price*1000))) // price
+	binary.BigEndian.PutUint32(nmsgO[29:33], 0)                              // time in force
+	binary.BigEndian.PutUint32(nmsgO[33:37], 0)                              // client ID
+	binary.BigEndian.PutUint64(nmsgO[37:45], 0)                              // minimum quantity
 
 	return nmsgO
 }
 
 func parseU(raw []string) []byte {
 	nmsgO := make([]byte, 21)
-	nmsgO[0]	= 'U' //orderType
-	copy(nmsgO[1:4] , []byte(raw[4])) //orderID
-	copy(nmsgO[5:9] , []byte(raw[4])) //orderID
-	copy(nmsgO[9:17]	, []byte(raw[7])) //QTY
+	nmsgO[0] = 'U'                    //orderType
+	copy(nmsgO[1:4], []byte(raw[4]))  //orderID
+	copy(nmsgO[5:9], []byte(raw[4]))  //orderID
+	copy(nmsgO[9:17], []byte(raw[7])) //QTY
 	var replacer = strings.NewReplacer(" ", ",", "\t", ",")
 	str := replacer.Replace(raw[6])
-	copy(nmsgO[17:21] , []byte(str)) //price int
+	copy(nmsgO[17:21], []byte(str)) //price int
 	return nmsgO
 }
 
 func parseX(raw []string) []byte {
 	nmsgO := make([]byte, 5)
-	nmsgO[0]	= 'X' //orderType
-	copy(nmsgO[1:4] , []byte(raw[4])) //orderID
+	nmsgO[0] = 'X'                   //orderType
+	copy(nmsgO[1:4], []byte(raw[4])) //orderID
 	return nmsgO
 }
-
 
 func main() {
 	flag.Parse()
@@ -155,12 +161,16 @@ func main() {
 	csvFile, _ := os.Open("/Users/im/github/l2_scylla_makerdao_uk/ws_api/OrderLog20181229-2.csv")
 	reader := csv.NewReader(bufio.NewReader(csvFile))
 	srcBuffer := atomic.MakeBuffer(([]byte)("01234567890123456789012345678901234567890123456789"))
+	firstLine := true
 	for {
 		line, error := reader.Read()
 		if error == io.EOF {
 			break
 		} else if error != nil {
 			log.Fatal(error)
+		}
+		if firstLine {
+			continue
 		}
 		for i := 0; i < len(line); i++ {
 			ord := strings.Split(line[i], ";")
@@ -227,94 +237,94 @@ func main() {
 		}
 
 		/*	for {
-		count, _ := fInput.Read(msgHeader)
-		if count < 2 {
-			// EOF
-			fmt.Printf("=========== Parsing ITCH v5.0 ends   ===========\n")
-			break
-		}
-		rMsgHeader = bytes.NewReader(msgHeader)
-		err := binary.Read(rMsgHeader, binary.BigEndian, &msgLength)
-		check(err)
+				count, _ := fInput.Read(msgHeader)
+				if count < 2 {
+					// EOF
+					fmt.Printf("=========== Parsing ITCH v5.0 ends   ===========\n")
+					break
+				}
+				rMsgHeader = bytes.NewReader(msgHeader)
+				err := binary.Read(rMsgHeader, binary.BigEndian, &msgLength)
+				check(err)
 
-		// message buffer
-		// message buffer
-		message := make([]byte, msgLength+2)
-		message[0] = msgHeader[0]
-		message[1] = msgHeader[1]
-		count, _ = fInput.Read(message[2:])
-		if count < int(msgLength) {
-			panic("Error reading input file")
-		}
-		//message := fmt.Sprintf("this is a message %d", count)
-		srcBuffer := atomic.MakeBuffer(([]byte)(message))
-		log.Print(message)
-		t := message[2]
-		switch t {
-		 case 'S':
-			 log.Printf("ProcessSystemEventMessage")
-		case 'R':
-			log.Printf( "ProcessStockDirectoryMessage")
-		case 'H':
-			log.Printf( "ProcessStockTradingActionMessage")
-		case 'Y':
-			log.Printf( "ProcessRegSHOMessage")
-		case 'L':
-			log.Printf( "ProcessMarketParticipantPositionMessage")
-		case 'V':
-			log.Printf( "ProcessMWCBDeclineMessage")
-		case 'W':
-			log.Printf( "ProcessMWCBStatusMessage")
-		case 'K':
-			log.Printf( "ProcessIPOQuotingMessage")
-		case 'A':
-			log.Printf( "ProcessAddOrderMessage")
-		case 'F':
-			log.Printf( "ProcessAddOrderMPIDMessage")
-		case 'E':
-			log.Printf( "ProcessOrderExecutedMessage")
-		case 'C':
-			log.Printf( "ProcessOrderExecutedWithPriceMessage")
-		case 'X':
-			log.Printf( "ProcessOrderCancelMessage")
-		case 'D':
-			log.Printf( "ProcessOrderDeleteMessage")
-		case 'U':
-			log.Printf( "ProcessOrderReplaceMessage")
-		case 'P':
-			log.Printf( "ProcessTradeMessage")
-		case 'Q':
-			log.Printf( "ProcessCrossTradeMessage")
-		case 'B':
-			log.Printf( "ProcessBrokenTradeMessage")
-		case 'I':
-			log.Printf( "ProcessNOIIMessage")
-		case 'N':
-			log.Printf( "ProcessRPIIMessage")
-		default:
-			log.Printf( "ProcessUnknownMessage")
+				// message buffer
+				// message buffer
+				message := make([]byte, msgLength+2)
+				message[0] = msgHeader[0]
+				message[1] = msgHeader[1]
+				count, _ = fInput.Read(message[2:])
+				if count < int(msgLength) {
+					panic("Error reading input file")
+				}
+				//message := fmt.Sprintf("this is a message %d", count)
+				srcBuffer := atomic.MakeBuffer(([]byte)(message))
+				log.Print(message)
+				t := message[2]
+				switch t {
+				 case 'S':
+					 log.Printf("ProcessSystemEventMessage")
+				case 'R':
+					log.Printf( "ProcessStockDirectoryMessage")
+				case 'H':
+					log.Printf( "ProcessStockTradingActionMessage")
+				case 'Y':
+					log.Printf( "ProcessRegSHOMessage")
+				case 'L':
+					log.Printf( "ProcessMarketParticipantPositionMessage")
+				case 'V':
+					log.Printf( "ProcessMWCBDeclineMessage")
+				case 'W':
+					log.Printf( "ProcessMWCBStatusMessage")
+				case 'K':
+					log.Printf( "ProcessIPOQuotingMessage")
+				case 'A':
+					log.Printf( "ProcessAddOrderMessage")
+				case 'F':
+					log.Printf( "ProcessAddOrderMPIDMessage")
+				case 'E':
+					log.Printf( "ProcessOrderExecutedMessage")
+				case 'C':
+					log.Printf( "ProcessOrderExecutedWithPriceMessage")
+				case 'X':
+					log.Printf( "ProcessOrderCancelMessage")
+				case 'D':
+					log.Printf( "ProcessOrderDeleteMessage")
+				case 'U':
+					log.Printf( "ProcessOrderReplaceMessage")
+				case 'P':
+					log.Printf( "ProcessTradeMessage")
+				case 'Q':
+					log.Printf( "ProcessCrossTradeMessage")
+				case 'B':
+					log.Printf( "ProcessBrokenTradeMessage")
+				case 'I':
+					log.Printf( "ProcessNOIIMessage")
+				case 'N':
+					log.Printf( "ProcessRPIIMessage")
+				default:
+					log.Printf( "ProcessUnknownMessage")
 
-		}
-		//log.Printf(string(t))
-		ret := publication.Offer(srcBuffer, 0, int32(len(message)), nil)
-		switch ret {
-		case aeron.NotConnected:
-			log.Printf("%d: not connected yet", total)
-		case aeron.BackPressured:
-			log.Printf("%d: back pressured", total)
-		default:
-			if ret < 0 {
-				log.Printf("%d: Unrecognized code: %d", total, ret)
-			} else {
-				log.Printf("%d: success!", total)
+				}
+				//log.Printf(string(t))
+				ret := publication.Offer(srcBuffer, 0, int32(len(message)), nil)
+				switch ret {
+				case aeron.NotConnected:
+					log.Printf("%d: not connected yet", total)
+				case aeron.BackPressured:
+					log.Printf("%d: back pressured", total)
+				default:
+					if ret < 0 {
+						log.Printf("%d: Unrecognized code: %d", total, ret)
+					} else {
+						log.Printf("%d: success!", total)
+					}
+				}
+				if !publication.IsConnected() {
+					log.Printf("no subscribers detected")
+				}
+				//time.Sleep(time.Second)
 			}
-		}
-		if !publication.IsConnected() {
-			log.Printf("no subscribers detected")
-		}
-		//time.Sleep(time.Second)
-	}
-*/
+		*/
 		//	fmt.Printf("Total number of all messages parsed: %d\n", total)
 		//	for t, n := range totalType {
 		//		fmt.Printf("Total number of %c messages parsed: %d\n", t, n)
@@ -322,28 +332,28 @@ func main() {
 		fmt.Printf("Time spent: %d seconds\n", time.Since(start)/1000000000)
 
 		/**
-	for counter := 0; counter < *examples.ExamplesConfig.Messages; counter++ {
-		message := fmt.Sprintf("this is a message %d", counter)
-		srcBuffer := atomic.MakeBuffer(([]byte)(message))
-		ret := publication.Offer(srcBuffer, 0, int32(len(message)), nil)
-		switch ret {
-		case aeron.NotConnected:
-			log.Printf("%d: not connected yet", counter)
-		case aeron.BackPressured:
-			log.Printf("%d: back pressured", counter)
-		default:
-			if ret < 0 {
-				log.Printf("%d: Unrecognized code: %d", counter, ret)
-			} else {
-				log.Printf("%d: success!", counter)
+		for counter := 0; counter < *examples.ExamplesConfig.Messages; counter++ {
+			message := fmt.Sprintf("this is a message %d", counter)
+			srcBuffer := atomic.MakeBuffer(([]byte)(message))
+			ret := publication.Offer(srcBuffer, 0, int32(len(message)), nil)
+			switch ret {
+			case aeron.NotConnected:
+				log.Printf("%d: not connected yet", counter)
+			case aeron.BackPressured:
+				log.Printf("%d: back pressured", counter)
+			default:
+				if ret < 0 {
+					log.Printf("%d: Unrecognized code: %d", counter, ret)
+				} else {
+					log.Printf("%d: success!", counter)
+				}
 			}
-		}
 
-		if !publication.IsConnected() {
-			log.Printf("no subscribers detected")
+			if !publication.IsConnected() {
+				log.Printf("no subscribers detected")
+			}
+			time.Sleep(time.Second)
 		}
-		time.Sleep(time.Second)
-	}
-	**/
+		**/
 	}
 }
