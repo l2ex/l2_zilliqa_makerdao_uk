@@ -71,10 +71,34 @@ func parseO(raw []string) []byte {
 	accountID, _ := strconv.ParseUint("12", 10, 32)
 	orderbookID := uint32(0)
 	switch raw[1] {
-	case "USD000UTSTOM":
+	case "BYN_RUB":
 		orderbookID = 1
-	case "EUR_RUB__TOM":
+	case "CHF_RUB":
 		orderbookID = 2
+	case "CNY_RUB":
+		orderbookID = 3
+	case "EUR_RUB":
+		orderbookID = 4
+	case "EUR_RUB1":
+		orderbookID = 5
+	case "EUR_RUB2":
+		orderbookID = 6
+	case "EUR_USD":
+		orderbookID = 7
+	case "GBP_RUB":
+		orderbookID = 8
+	case "GLD_RUB":
+		orderbookID = 9
+	case "HKD_RUB":
+		orderbookID = 10
+	case "SLV_RUB":
+		orderbookID = 11
+	case "USD_EUR":
+		orderbookID = 12
+	case "USD_RUB":
+		orderbookID = 13
+	case "USD_RUB1":
+		orderbookID = 14
 	}
 
 	nmsgO := make([]byte, 45)
