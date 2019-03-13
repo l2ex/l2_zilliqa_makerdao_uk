@@ -1,10 +1,8 @@
 package InterExchange
 
 import (
-	"flag"
 	"github.com/lirm/aeron-go/aeron"
 	"github.com/lirm/aeron-go/aeron/atomic"
-	"github.com/op/go-logging"
 	"log"
 	"time"
 )
@@ -17,25 +15,7 @@ type PUB struct {
 	Buffer *atomic.Buffer
 }
 
-var pubConf = struct{
-	AeronPrefix     *string
-	ProfilerEnabled *bool
-	DriverTo        *int64
-	StreamID        *int
-	Channel         *string
-	Messages        *int
-	Size            *int
-	LoggingOn       *bool
-}{
-	AeronPrefix:       flag.String("p", aeron.DefaultAeronDir, "root directory for aeron driver file"),
-	ProfilerEnabled:   flag.Bool("prof", false, "enable CPU profiling"),
-	DriverTo:          flag.Int64("to", 1000000, "driver liveliness timeout in ms"),
-	StreamID:          flag.Int("sid", 1024, "default streamId to use"),
-	Channel:           flag.String("chan", "aeron:udp?endpoint=10.10.0.124:40123", "default channel to subscribe to"),
-	Messages:          flag.Int("m", 1000000, "number of messages to send"),
-	Size:              flag.Int("len", 256, "messages size"),
-	LoggingOn:         flag.Bool("l", false, "enable logging"),
-}
+
 
 func check(e error) {
 	if e != nil {
@@ -44,33 +24,18 @@ func check(e error) {
 }
 
 func (publisher *PUB)Connect()  {
-	flag.Parse()
 
-	if !*pubConf.LoggingOn {
-		logging.SetLevel(logging.INFO, "aeron")
-		logging.SetLevel(logging.INFO, "memmap")
-		logging.SetLevel(logging.INFO, "driver")
-		logging.SetLevel(logging.INFO, "counters")
-		logging.SetLevel(logging.INFO, "logbuffers")
-		logging.SetLevel(logging.INFO, "buffer")
-		logging.SetLevel(logging.INFO, "rb")
-	}
-
-	to := time.Duration(time.Millisecond.Nanoseconds() * *pubConf.DriverTo)
-	ctx := aeron.NewContext().AeronDir(*pubConf.AeronPrefix).MediaDriverTimeout(to)
+	to := time.Duration(time.Millisecond.Nanoseconds() * 1000000)
+	ctx := aeron.NewContext().AeronDir(aeron.DefaultAeronDir).MediaDriverTimeout(to)
 
 	var err error
 	publisher.Transport, err = aeron.Connect(ctx)
 	if err != nil {
 		logger.Fatalf("Failed to connect to media driver: %s\n", err.Error())
 	}
-	defer publisher.Transport.Close()
-
 	publisher.Publication = <-publisher.Transport.AddPublication(*Config.OrderBookChannel, int32(*Config.OrderBookStreamID))
-
-	defer publisher.Publication.Close()
 	log.Printf("Publication found %v", publisher.Publication)
-	bulkMSG := "fkshdkjfhkdsjhfkjdshfkjhsakjdfhkjdshfkjsdhfkjhdsakjfhkjsdahfkjshafkjdsahkfjhsadkljfhlkasdjhfkdslajhfjkdlsahfkldashfjkljashdfksajhdkfjhsdalkfhlkdsjahfkladsjhfkldsjhflksdahfklsahfkld"
+	bulkMSG := "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
 	publisher.Buffer = atomic.MakeBuffer(([]byte)(bulkMSG))
 
 
@@ -204,3 +169,7 @@ func (publisher *PUB)Connect()  {
 	
 }
 
+func (publisher *PUB)Disconnect() {
+	 publisher.Transport.Close()
+	 publisher.Publication.Close()
+}

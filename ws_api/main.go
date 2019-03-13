@@ -57,6 +57,10 @@ func main() {
 	log.SetFlags(0)
 	http.HandleFunc("/", apiStream)
 	log.Fatal(http.ListenAndServe(*Addr, nil))
+
+
+	defer 		sub.Disconnect()
+	defer 		pub.Disconnect()
 }
 
 func push2ME(msg []byte)  {
@@ -80,7 +84,7 @@ func push2ME(msg []byte)  {
 
 func push2WS(c websocket.Conn, mt int) {
 
-		subscription := <-sub.Transport.AddSubscription(*InterExchange.Config.OrderBookChannel, int32(*InterExchange.Config.OrderBookStreamID))
+		subscription := <-sub.Transport.AddSubscription(*InterExchange.Config.APIChannel, int32(*InterExchange.Config.ApiStreamID))
 		defer subscription.Close()
 		log.Printf("Subscription found %v", subscription)
 
@@ -103,7 +107,7 @@ func push2WS(c websocket.Conn, mt int) {
 			idleStrategy.Idle(fragmentsRead)
 		}
 
-		sub.Disconnect()
+
 
 		}
 
