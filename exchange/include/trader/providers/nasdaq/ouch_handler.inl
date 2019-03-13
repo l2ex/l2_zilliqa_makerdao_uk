@@ -6,6 +6,8 @@
     \copyright MIT License
 */
 
+#include <cassert>
+
 namespace TradingPlatform {
 namespace OUCH {
 

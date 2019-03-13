@@ -8,8 +8,6 @@
 
 #include "trader/providers/nasdaq/ouch_handler.h"
 
-#include <cassert>
-
 namespace TradingPlatform {
 namespace OUCH {
 
