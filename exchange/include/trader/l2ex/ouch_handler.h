@@ -36,7 +36,9 @@ protected:
                 message.OrderVerb == 'B' ? Matching::OrderSide::BUY : Matching::OrderSide::SELL,
                 message.Shares
             );
-            _market.AddOrder(order);
+            auto error = _market.AddOrder(order);
+            if (error != Matching::ErrorCode::OK)
+                return false;
         }
         else
         {
@@ -47,9 +49,10 @@ protected:
                 message.Price,
                 message.Shares
             );
-            _market.AddOrder(order);
+            auto error = _market.AddOrder(order);
+            if (error != Matching::ErrorCode::OK)
+                return false;
         }
-        publishMessage(message);
         return true;
     }
 
@@ -58,8 +61,11 @@ protected:
 #ifdef TRADING_PLATFORM_L2EX_OUCH_HANDLER_PRINT_LOGS
         std::cout << "[OUTH] Message received: " << message << std::endl;
 #endif
-        // TODO: Implement
-        publishMessage(message);
+        uint64_t existingOrderId = message.ExistingOrderToken;
+        uint64_t replacementOrderId = message.ReplacementOrderToken;
+        auto error = _market.ReplaceOrder(existingOrderId, replacementOrderId, message.Price, message.Shares);
+        if (error != Matching::ErrorCode::OK)
+            return false;
         return true;
     }
 
@@ -68,8 +74,10 @@ protected:
 #ifdef TRADING_PLATFORM_L2EX_OUCH_HANDLER_PRINT_LOGS
         std::cout << "[OUTH] Message received: " << message << std::endl;
 #endif
-        // TODO: Implement
-        publishMessage(message);
+        uint64_t orderId = message.OrderToken;
+        auto error = _market.DeleteOrder(orderId);
+        if (error != Matching::ErrorCode::OK)
+            return false;
         return true;
     }
 

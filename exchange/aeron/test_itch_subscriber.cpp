@@ -54,13 +54,6 @@ int main(int argc, char **argv)
 
         // Process the buffer
         itchHandler->Process(buffer.buffer() + offset, length);
-
-        // Print some logs
-        // std::cout << "Handled message on stream " << header.streamId()
-        //     << " in session " << header.sessionId()
-        //     << " [" << offset << ":" << offset + length << "]"
-        //     << (processed ? " and processed successfully" : " and is not processed")
-        //     << std::endl;
     });
 
     subscriber->setEndOfStreamHandler([](aeron::Image &image)
