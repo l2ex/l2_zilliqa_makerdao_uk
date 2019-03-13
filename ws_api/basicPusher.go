@@ -160,7 +160,7 @@ func main() {
 	var total uint64
 	start := time.Now()
 
-	csvFile, _ := os.Open("/Users/im/github/l2_scylla_makerdao_uk/ws_api/OrderLog20181229-2.csv")
+	csvFile, _ := os.Open("./OrderLog20181229-2.csv")
 	reader := csv.NewReader(bufio.NewReader(csvFile))
 	srcBuffer := make([]byte, 1024)
 	srcBufferAtomic := atomic.MakeBuffer(srcBuffer, len(srcBuffer))
