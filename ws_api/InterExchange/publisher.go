@@ -13,7 +13,8 @@ type streamPub chan *aeron.Publication
 
 type PUB struct {
 	Transport *aeron.Aeron
-	publication chan *aeron.Publication
+	Publication *aeron.Publication
+	Buffer *atomic.Buffer
 }
 
 func check(e error) {
@@ -45,28 +46,13 @@ func (publisher *PUB)Connect()  {
 	}
 	defer publisher.Transport.Close()
 
+	publisher.Publication = <-publisher.Transport.AddPublication(*Config.OrderBookChannel, int32(*Config.OrderBookStreamID))
 
-	publisher.publication = <-publisher.Transport.AddPublication(*Config.OrderBookChannel, int32(*Config.OrderBookStreamID))
-	defer publisher.publication.Close()
-	log.Printf("Publication found %v", publication)
+	defer publisher.Publication.Close()
+	log.Printf("Publication found %v", publisher.Publication)
+	bulkMSG := "fkshdkjfhkdsjhfkjdshfkjhsakjdfhkjdshfkjsdhfkjhdsakjfhkjsdahfkjshafkjdsahkfjhsadkljfhlkasdjhfkdslajhfjkdlsahfkldashfjkljashdfksajhdkfjhsdalkfhlkdsjahfkladsjhfkldsjhflksdahfklsahfkld"
+	publisher.Buffer = atomic.MakeBuffer(([]byte)(bulkMSG))
 
-	srcBuffer := atomic.MakeBuffer(([]byte)(message))
-	ret := publisher.publication.Offer(srcBuffer, 0, int32(len(message)), nil)
-	switch ret {
-	case aeron.NotConnected:
-		log.Printf("%d: not connected yet", total)
-	case aeron.BackPressured:
-		log.Printf("%d: back pressured", total)
-	default:
-		if ret < 0 {
-			log.Printf("%d: Unrecognized code: %d", total, ret)
-		} else {
-			log.Printf("%d: success!", total)
-		}
-	}
-	if !publisher.publication.IsConnected() {
-		log.Printf("no subscribers detected")
-	}
 
 	/*
 		msgHeader := make([]byte, 2)
@@ -197,3 +183,4 @@ func (publisher *PUB)Connect()  {
 	**/
 	
 }
+

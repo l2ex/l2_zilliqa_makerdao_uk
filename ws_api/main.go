@@ -19,7 +19,7 @@ var Addr = flag.String("addr", "localhost:2054", "http service address")
 var upgrader = websocket.Upgrader{} // use default options
 
 var sub = InterExchange.SUB{}
-var pub = InterExchange.SUB{}
+var pub = InterExchange.PUB{}
 
 func apiStream(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("creating to %s", *Addr)
@@ -40,10 +40,9 @@ func apiStream(w http.ResponseWriter, r *http.Request) {
 		// place order
 		case 'O':
 			go push2ME(message)
-			// get hystory
+
 		}
 
-		// send history
 		go push2WS(*c , mt)
 
 	}
@@ -54,11 +53,6 @@ func main() {
 	pub.Connect()
 
 
-
-
-	log.Printf("Publication found %v", publication)
-
-
 	flag.Parse()
 	log.SetFlags(0)
 	http.HandleFunc("/", apiStream)
@@ -66,28 +60,22 @@ func main() {
 }
 
 func push2ME(msg []byte)  {
-	//fmt.Println(message)
-
-
-	srcBuffer := atomic.MakeBuffer(([]byte)(message))
-	ret := publication.Offer(srcBuffer, 0, int32(len(message)), nil)
+	ret := pub.Publication.Offer(pub.Buffer, 0, int32(len(msg)), nil)
 	switch ret {
 	case aeron.NotConnected:
-		log.Printf("%d: not connected yet", total)
+		log.Printf("not connected yet")
 	case aeron.BackPressured:
-		log.Printf("%d: back pressured", total)
+		log.Printf("back pressured")
 	default:
 		if ret < 0 {
-			log.Printf("%d: Unrecognized code: %d", total, ret)
+			log.Printf("Unrecognized code: %d", ret)
 		} else {
-			log.Printf("%d: success!", total)
+			log.Printf("success!")
 		}
 	}
-	if !publication.IsConnected() {
+	if !pub.Publication.IsConnected() {
 		log.Printf("no subscribers detected")
 	}
-
-
 }
 
 func push2WS(c websocket.Conn, mt int) {

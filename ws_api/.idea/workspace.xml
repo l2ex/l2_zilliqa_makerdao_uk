@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="31213ec5-fb03-44dd-8bf3-69dee29e49aa" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/InterExchange/aeron_config.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/InterExchange/publisher.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/InterExchange/subscriber.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/InterExchange/publisher.go" beforeDir="false" afterPath="$PROJECT_DIR$/InterExchange/publisher.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -48,11 +46,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="389">
-              <caret line="57" lean-forward="true" selection-start-line="57" selection-end-line="57" />
+            <state relative-caret-position="-142">
+              <caret line="25" column="35" lean-forward="true" selection-start-line="25" selection-start-column="35" selection-end-line="25" selection-end-column="35" />
               <folding>
                 <element signature="e#14#135#0" expanded="true" />
               </folding>
@@ -78,13 +76,25 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/InterExchange/publisher.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="274">
-              <caret line="21" column="5" lean-forward="true" selection-start-line="21" selection-start-column="5" selection-end-line="21" selection-end-column="5" />
+            <state relative-caret-position="727">
+              <caret line="53" column="20" selection-start-line="53" selection-start-column="20" selection-end-line="53" selection-end-column="20" />
               <folding>
                 <element signature="e#23#200#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/go/src/github.com/lirm/aeron-go/aeron/atomic/buffer.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="402">
+              <caret line="29" selection-start-line="29" selection-end-line="32" selection-end-column="1" />
+              <folding>
+                <element signature="e#578#677#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -111,8 +121,8 @@
         <option value="$PROJECT_DIR$/aeron/subscriber.go" />
         <option value="$PROJECT_DIR$/InterExchange/aeron_config.go" />
         <option value="$PROJECT_DIR$/InterExchange/subscriber.go" />
-        <option value="$PROJECT_DIR$/main.go" />
         <option value="$PROJECT_DIR$/InterExchange/publisher.go" />
+        <option value="$PROJECT_DIR$/main.go" />
       </list>
     </option>
   </component>
@@ -188,6 +198,17 @@
               <item name="lirm" type="462c0819:PsiDirectoryNode" />
               <item name="aeron-go" type="462c0819:PsiDirectoryNode" />
               <item name="aeron" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="ws_api" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="GOPATH &lt;ws_api&gt;" type="20ee2d1f:SyntheticLibraryElementNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="github.com" type="462c0819:PsiDirectoryNode" />
+              <item name="lirm" type="462c0819:PsiDirectoryNode" />
+              <item name="aeron-go" type="462c0819:PsiDirectoryNode" />
+              <item name="aeron" type="462c0819:PsiDirectoryNode" />
+              <item name="atomic" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -291,13 +312,6 @@
     <option name="version" value="1" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/go/src/github.com/lirm/aeron-go/aeron/atomic/buffer.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="198">
-          <caret line="254" column="19" selection-start-line="254" selection-start-column="19" selection-end-line="254" selection-end-column="19" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///usr/local/go/src/time/time.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="299">
@@ -346,22 +360,32 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main.go">
+    <entry file="file://$USER_HOME$/go/src/github.com/lirm/aeron-go/aeron/atomic/buffer.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="389">
-          <caret line="57" lean-forward="true" selection-start-line="57" selection-end-line="57" />
+        <state relative-caret-position="402">
+          <caret line="29" selection-start-line="29" selection-end-line="32" selection-end-column="1" />
           <folding>
-            <element signature="e#14#135#0" expanded="true" />
+            <element signature="e#578#677#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/InterExchange/publisher.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="274">
-          <caret line="21" column="5" lean-forward="true" selection-start-line="21" selection-start-column="5" selection-end-line="21" selection-end-column="5" />
+        <state relative-caret-position="727">
+          <caret line="53" column="20" selection-start-line="53" selection-start-column="20" selection-end-line="53" selection-end-column="20" />
           <folding>
             <element signature="e#23#200#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-142">
+          <caret line="25" column="35" lean-forward="true" selection-start-line="25" selection-start-column="35" selection-end-line="25" selection-end-column="35" />
+          <folding>
+            <element signature="e#14#135#0" expanded="true" />
           </folding>
         </state>
       </provider>
