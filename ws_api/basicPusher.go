@@ -51,7 +51,7 @@ var ExamplesConfig = struct {
 	flag.Bool("prof", false, "enable CPU profiling"),
 	flag.Int64("to", 1000000, "driver liveliness timeout in ms"),
 	flag.Int("sid", 1025, "default streamId to use"),
-	flag.String("chan", "aeron:udp?endpoint=10.10.0.122:40570", "default channel to subscribe to"),
+	flag.String("chan", "aeron:udp?endpoint=13.68.19.60:40570", "default channel to subscribe to"),
 	flag.Int("m", 1000000, "number of messages to send"),
 	flag.Int("len", 256, "messages size"),
 	flag.Bool("l", false, "enable logging"),
@@ -168,7 +168,7 @@ func main() {
 	var total uint64
 	start := time.Now()
 
-	csvFile, _ := os.Open("/Users/im/github/l2_scylla_makerdao_uk/ws_api/OrderLog20181229-2.csv")
+	csvFile, _ := os.Open("./InterExchange/OrderLog20181229-2.csv")
 	reader := csv.NewReader(bufio.NewReader(csvFile))
 	srcBuffer := make([]byte, 1024)
 	srcBufferAtomic := atomic.MakeBuffer(srcBuffer, len(srcBuffer))
