@@ -69,6 +69,7 @@ func (hub *Hub) Run() {
 func (hub *Hub) listenAeron() {
 	handler := func(buffer *atomic.Buffer, offset int32, length int32, header *logbuffer.Header) {
 		message := buffer.GetBytesArray(offset, length)
+		hub.logger.Infof("[AERON] %#x\n", message)
 		if len(message) > 2 {
 			switch message[2] {
 			case 'A':
