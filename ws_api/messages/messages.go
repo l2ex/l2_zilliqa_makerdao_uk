@@ -2,6 +2,7 @@ package messages
 
 import (
 	"encoding/binary"
+	"fmt"
 )
 
 // OrderBookID is identifier of order book.
@@ -54,4 +55,22 @@ func (message *MakeOrderRequest) Serialize() ([]byte, error) {
 	binary.BigEndian.PutUint32(result[31:35], 0)                           // client ID
 	binary.BigEndian.PutUint64(result[35:43], 0)                           // minimum quantity
 	return result, nil
+}
+
+func (message *MakeOrderRequest) Deserialize(data []byte) error {
+	if len(data) != 43 {
+		return fmt.Errorf("Length of serialized data should be equal to 43 bytes")
+	}
+	message.OrderID = binary.BigEndian.Uint32(data[1:5])                    // order ID
+	message.AccountID = binary.BigEndian.Uint32(data[6:10])                 // account ID
+	message.OrderSide = OrderSide(data[10])                                 // order side (buy/sell)
+	message.Quantity = binary.BigEndian.Uint64(data[11:19])                 // quantity
+	message.OrderBookID = OrderBookID(binary.BigEndian.Uint32(data[19:23])) // orderbook ID
+	message.Price = binary.BigEndian.Uint32(data[23:27])                    // price
+	if message.Price == 0x7FFFFFFF {
+		message.OrderType = OrderTypeLimit
+	} else {
+		message.OrderType = OrderTypeMarket
+	}
+	return nil
 }
