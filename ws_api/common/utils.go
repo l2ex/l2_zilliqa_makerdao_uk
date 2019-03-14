@@ -19,10 +19,12 @@ func IsConnectionClosedUnexpectedly(err error) bool {
 func CloseConnection(conn *websocket.Conn, logger *logging.Logger) {
 	err := conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 	if err != nil {
-		if IsConnectionClosedUnexpectedly(err) {
-			logger.Errorf("[ERROR] Unable to write close message to websocket: %s\n", err.Error())
-		} else {
-			logger.Info("Websocket connection is closed\n")
+		if logger != nil {
+			if IsConnectionClosedUnexpectedly(err) {
+				logger.Errorf("[ERROR] Unable to write close message to websocket: %s\n", err.Error())
+			} else {
+				logger.Info("Websocket connection is closed\n")
+			}
 		}
 		return
 	}
@@ -30,10 +32,12 @@ func CloseConnection(conn *websocket.Conn, logger *logging.Logger) {
 	for {
 		messageType, _, err := conn.ReadMessage()
 		if err != nil {
-			if IsConnectionClosedUnexpectedly(err) {
-				logger.Errorf("[ERROR] Unable to read message from websocket: %s\n", err.Error())
-			} else {
-				logger.Info("Websocket connection is closed\n")
+			if logger != nil {
+				if IsConnectionClosedUnexpectedly(err) {
+					logger.Errorf("[ERROR] Unable to read message from websocket: %s\n", err.Error())
+				} else {
+					logger.Info("Websocket connection is closed\n")
+				}
 			}
 			return
 		}
