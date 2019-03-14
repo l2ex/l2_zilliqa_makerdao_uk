@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@zilliqa-js/zilliqa": "^0.5.2"
+  }
+}
