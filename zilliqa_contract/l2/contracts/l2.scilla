@@ -1,0 +1,104 @@
+(* l2.scilla *)
+(* l2 state *)
+(* Created by IK *)
+
+scilla_version 0
+
+(***************************************************)
+(*               Associated library                *)
+(***************************************************)
+
+import IntUtils
+
+library L2
+
+let maker_changed  = Uint32 1
+let maker_hasnt_changed  = Uint32 2
+let close_channel_error  = Uint32 3
+let start_challange  = Uint32 4
+let withdraw_error = Uint32 5
+let got_funds_code  = Uint32 6
+let nonce_cutter_offset = Uint32 0
+
+(***********************************************************)
+(* Layer2 state channel for L2 Exchange Protocol           *)
+(***********************************************************)
+contract L2
+(owner: ByStr20,
+ttl: Uint32,
+chalange_ttl: BNum,
+owner_p_k: ByStr33)
+
+field val : Map ByStr20 Uint128 = Emp ByStr20 Uint128
+field ttl : Map ByStr20 BNum = Emp ByStr20 BNum
+field nonce : Map ByStr20 Uint32 = Emp ByStr20 Uint32
+field pub_key : Map ByStr20 ByStr33 = Emp ByStr20 ByStr33
+
+
+(* setup or update channel *)
+transition setupChanel( )
+    current_block <- & BLOCKNUMBER;
+    tmp = builtin badd blk ttl_inc;
+    ttl[_sender] := tmp;
+    has_amount <- val[_sender];
+    match has_amount with
+    | Some a => 
+        new_amount = builtin add a _amount;
+        val[_sender] := new_amount
+        ttl[_sender] := current_block + ttl;
+    | None =>
+        val[_sender] := _amount;
+        zero = Uint32 0;
+        nonce[_sender] := zero
+        ttl[_sender] := current_block + ttl;
+    end
+end
+
+transition closeChannelByTrader(msg : String, hash : ByStr, sig : ByStr64)
+    current_block <- & BLOCKNUMBER;
+    has_amount <- val[_sender];
+    restored_oracle_nonce = builtin substr msg start_challange nonce_cutter_offset;
+    converted_oracle_nonce = builtin to_uint32 restored_oracle_nonce;
+    state_nonce <- nonce[_sender];
+    pub_key <- pub_key[owner];
+    sig = builtin schnorr_verify pub_key hash sig;
+    match sig with
+        | False =>
+        e = {_eventname : "IncorectSignature"; code : close_channel_error};
+        event e  
+        | True =>
+        ttl[_sender] := current_block + chalange_ttl;
+        e = {_eventname : "StartChallangeDelay"; code : start_challenge};
+        event e  
+    end
+      
+end
+
+(* 1. check _sender is owner(exchange oracle) *)
+(* 2. check signature owner has channel *)
+(* 3. check ttl of channel is close to expire*)
+(* if 1&2&3 : fine _sender channel for 1ZIL*)
+(* TODO !!!*)
+transition chalange(msg : ByStr, sig : ByStr64)
+
+end
+
+(* unconditional withdraw, when ttl of user > BLOCKNUMBER *)
+transition withdraw()
+    current_block <- & BLOCKNUMBER;
+    sender_ttl <- ttl[_sender]  
+    is_chalange_over = uint32_gt sender_ttl current_block
+        match is_chalange_over with
+        | False => 
+        e = {_eventname : "ChallengeIsNotOver"; code : withdraw_error};
+        event e
+        | True =>
+        msg = {_tag : "L2Withdraw"; _recipient : _sender; _amount : state_val; code : got_funds_code};
+        msgs = one_msg msg;
+        send msgs 
+end
+
+        
+  
+  
+
