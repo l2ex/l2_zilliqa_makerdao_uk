@@ -20,6 +20,11 @@ type Publisher struct {
 
 // Connect connects publisher to Aeron channel.
 func (publisher *Publisher) Connect() error {
+	logging.SetLevel(logging.WARNING, "aeron")
+	logging.SetLevel(logging.WARNING, "logbuffers")
+	logging.SetLevel(logging.WARNING, "memmap")
+	logging.SetLevel(logging.WARNING, "counters")
+	logging.SetLevel(logging.WARNING, "driver")
 
 	publisher.logger = logging.MustGetLogger("aeron-publisher")
 

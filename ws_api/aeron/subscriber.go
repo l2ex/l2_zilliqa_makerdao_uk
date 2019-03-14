@@ -17,6 +17,11 @@ type Subscriber struct {
 
 // Connect connects subscriber to Aeron channel.
 func (subscriber *Subscriber) Connect() error {
+	logging.SetLevel(logging.WARNING, "aeron")
+	logging.SetLevel(logging.WARNING, "logbuffers")
+	logging.SetLevel(logging.WARNING, "memmap")
+	logging.SetLevel(logging.WARNING, "counters")
+	logging.SetLevel(logging.WARNING, "driver")
 
 	subscriber.logger = logging.MustGetLogger("aeron-subscriber")
 
