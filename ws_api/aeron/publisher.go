@@ -1,43 +1,44 @@
-package InterExchange
+package aeron
 
 import (
+	"time"
+
 	"github.com/lirm/aeron-go/aeron"
 	"github.com/lirm/aeron-go/aeron/atomic"
-	"log"
-	"time"
+	"github.com/op/go-logging"
 )
 
-type streamPub chan *aeron.Publication
-
-type PUB struct {
-	Transport *aeron.Aeron
-	Publication *aeron.Publication
-	Buffer *atomic.Buffer
+// Publisher contains all Aeron specific objects needed to send data to Aeron channel.
+type Publisher struct {
+	Context      *aeron.Context
+	Transport    *aeron.Aeron
+	Publication  *aeron.Publication
+	Buffer       []byte
+	BufferAtomic *atomic.Buffer
+	logger       *logging.Logger
 }
 
-
-
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
-
-func (publisher *PUB)Connect()  {
-
-	to := time.Duration(time.Millisecond.Nanoseconds() * 1000000)
-	ctx := aeron.NewContext().AeronDir(aeron.DefaultAeronDir).MediaDriverTimeout(to)
+// Connect connects publisher to Aeron channel.
+func (publisher *Publisher) Connect() error {
 
 	var err error
-	publisher.Transport, err = aeron.Connect(ctx)
-	if err != nil {
-		logger.Fatalf("Failed to connect to media driver: %s\n", err.Error())
-	}
-	publisher.Publication = <-publisher.Transport.AddPublication(*Config.OrderBookChannel, int32(*Config.OrderBookStreamID))
-	log.Printf("Publication found %v", publisher.Publication)
-	bulkMSG := "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
-	publisher.Buffer = atomic.MakeBuffer(([]byte)(bulkMSG))
 
+	publisher.logger = logging.MustGetLogger("aeron-publisher")
+
+	keepAliveTimeout := time.Hour * 24 * 7
+	publisher.Context = aeron.NewContext().MediaDriverTimeout(keepAliveTimeout)
+
+	publisher.Transport, err = aeron.Connect(publisher.Context)
+	if err != nil {
+		publisher.logger.Errorf("Failed to connect to Aeron media driver: %s\n", err.Error())
+		return err
+	}
+
+	publisher.Publication = <-publisher.Transport.AddPublication(*Config.OrderBookChannel, int32(*Config.OrderBookStreamID))
+	publisher.logger.Infof("Publication created: %+v\n", publisher.Publication)
+
+	publisher.Buffer = make([]byte, 1024)
+	publisher.BufferAtomic = atomic.MakeBuffer(publisher.Buffer, len(publisher.Buffer))
 
 	/*
 		msgHeader := make([]byte, 2)
@@ -166,10 +167,13 @@ func (publisher *PUB)Connect()  {
 		time.Sleep(time.Second)
 	}
 	**/
-	
+
+	return err
 }
 
-func (publisher *PUB)Disconnect() {
-	 publisher.Transport.Close()
-	 publisher.Publication.Close()
+// Disconnect disconnects publisher from Aeron channel.
+func (publisher *Publisher) Disconnect() error {
+	publisher.Publication.Close()
+	publisher.Transport.Close()
+	return nil
 }
