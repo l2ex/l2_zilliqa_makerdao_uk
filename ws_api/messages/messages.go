@@ -30,8 +30,8 @@ const (
 	OrderSideSell OrderSide = 'S'
 )
 
-// MakeOrderRequest contains make order request information.
-type MakeOrderRequest struct {
+// EnterOrderMessage contains make order request information.
+type EnterOrderMessage struct {
 	AccountID   uint32
 	OrderBookID OrderBookID
 	OrderID     uint32
@@ -41,7 +41,7 @@ type MakeOrderRequest struct {
 	Price       uint32
 }
 
-func (message *MakeOrderRequest) Serialize() ([]byte, error) {
+func (message *EnterOrderMessage) Serialize() ([]byte, error) {
 	result := make([]byte, 43)
 	result[0] = 'O'                                                        // type
 	binary.BigEndian.PutUint32(result[1:5], uint32(message.OrderID))       // order ID
@@ -57,7 +57,7 @@ func (message *MakeOrderRequest) Serialize() ([]byte, error) {
 	return result, nil
 }
 
-func (message *MakeOrderRequest) Deserialize(data []byte) error {
+func (message *EnterOrderMessage) Deserialize(data []byte) error {
 	if len(data) != 43 {
 		return fmt.Errorf("Length of serialized data should be equal to 43 bytes")
 	}

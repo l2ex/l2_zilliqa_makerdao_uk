@@ -32,74 +32,74 @@ func main() {
 
 	var err error
 
-	makeOrderRequest := messages.MakeOrderRequest{}
+	message := messages.EnterOrderMessage{}
 
 	switch cliCommand {
 	case "makeOrder":
 	default:
-		log.Println("[ERROR] Unknown command specified:", cliCommand)
+		log.Println("[ERROR] Unsupported command specified:", cliCommand)
 		return
 	}
 
 	switch cliAccount {
 	case "alice":
-		makeOrderRequest.AccountID = 1
+		message.AccountID = 1
 	case "bob":
-		makeOrderRequest.AccountID = 2
+		message.AccountID = 2
 	case "charlie":
-		makeOrderRequest.AccountID = 3
+		message.AccountID = 3
 	default:
-		log.Println("[ERROR] Unknown account specified:", cliAccount)
+		log.Println("[ERROR] Unsupported account specified:", cliAccount)
 		return
 	}
 
 	switch cliSymbol {
 	case "ZIL_DAI":
-		makeOrderRequest.OrderBookID = messages.OrderBookID_ZIL_DAI
+		message.OrderBookID = messages.OrderBookID_ZIL_DAI
 	case "ETH_DAI":
-		makeOrderRequest.OrderBookID = messages.OrderBookID_ETH_DAI
+		message.OrderBookID = messages.OrderBookID_ETH_DAI
 	case "ZIL_ETH":
-		makeOrderRequest.OrderBookID = messages.OrderBookID_ZIL_ETH
+		message.OrderBookID = messages.OrderBookID_ZIL_ETH
 	default:
-		log.Println("[ERROR] Unknown symbol specified:", cliSymbol)
+		log.Println("[ERROR] Unsupported symbol specified:", cliSymbol)
 		return
 	}
 
 	switch cliOrderType {
 	case "limit":
-		makeOrderRequest.OrderType = messages.OrderTypeLimit
+		message.OrderType = messages.OrderTypeLimit
 	case "market":
-		makeOrderRequest.OrderType = messages.OrderTypeMarket
+		message.OrderType = messages.OrderTypeMarket
 	default:
-		log.Println("[ERROR] Unknown order type specified:", cliOrderType)
+		log.Println("[ERROR] Unsupported order type specified:", cliOrderType)
 		return
 	}
 
 	switch cliOrderSide {
 	case "buy":
-		makeOrderRequest.OrderSide = messages.OrderSideBuy
+		message.OrderSide = messages.OrderSideBuy
 	case "sell":
-		makeOrderRequest.OrderSide = messages.OrderSideSell
+		message.OrderSide = messages.OrderSideSell
 	default:
-		log.Println("[ERROR] Unknown order side specified:", cliOrderSide)
+		log.Println("[ERROR] Unsupported order side specified:", cliOrderSide)
 		return
 	}
 
-	makeOrderRequest.Quantity, err = strconv.ParseUint(cliOrderQuantity, 10, 64)
+	message.Quantity, err = strconv.ParseUint(cliOrderQuantity, 10, 64)
 	if err != nil {
 		log.Println("[ERROR] Invalid order quantity specified:", cliOrderQuantity)
 		return
 	}
 
-	if makeOrderRequest.OrderType == messages.OrderTypeLimit {
+	if message.OrderType == messages.OrderTypeLimit {
 		price, err := strconv.ParseFloat(cliOrderPrice, 64)
 		if err != nil {
 			log.Println("[ERROR] Invalid order price specified:", cliOrderPrice)
 			return
 		}
-		makeOrderRequest.Price = uint32(math.Round(price * 1000))
+		message.Price = uint32(math.Round(price * 1000))
 	} else {
-		makeOrderRequest.Price = 0x7FFFFFFF
+		message.Price = 0x7FFFFFFF
 	}
 
 	// TODO: Improve it somehow
@@ -110,17 +110,7 @@ func main() {
 		orderID = uint32(lastOrderID) + 1
 	}
 	ioutil.WriteFile("order_counter", ([]byte)(strconv.FormatUint(uint64(orderID), 10)), 0644)
-	makeOrderRequest.OrderID = orderID
-
-	serialized, err := makeOrderRequest.Serialize()
-	if err != nil {
-		log.Println("[ERROR] Unable to serialize message:", makeOrderRequest)
-		return
-	}
-
-	message := make([]byte, len(serialized)+2)
-	binary.BigEndian.PutUint16(message[:2], uint16(len(serialized)))
-	copy(message[2:], serialized)
+	message.OrderID = orderID
 
 	c, _, err := websocket.DefaultDialer.Dial(wsURL.String(), nil)
 	if err != nil {
@@ -129,7 +119,17 @@ func main() {
 	}
 	defer c.Close()
 
-	err = c.WriteMessage(websocket.BinaryMessage, message)
+	messageBytes, err := message.Serialize()
+	if err != nil {
+		log.Println("[ERROR] Unable to serialize message:", message)
+		return
+	}
+
+	messagePrefixed := make([]byte, len(messageBytes)+2)
+	binary.BigEndian.PutUint16(messagePrefixed[:2], uint16(len(messageBytes)))
+	copy(messagePrefixed[2:], messageBytes)
+
+	err = c.WriteMessage(websocket.BinaryMessage, messagePrefixed)
 	if err != nil {
 		log.Println("[WS] Failed to write close message to web socket:", err)
 		return

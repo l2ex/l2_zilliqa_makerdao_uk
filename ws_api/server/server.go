@@ -17,6 +17,8 @@ import (
 
 // Web socket related stuff
 var wsEndpoint = flag.String("addr", "0.0.0.0:2054", "web socket address")
+var wsReadBufferSize = 1024
+var wsWriteBufferSize = 1024
 
 // Internal transport over Aeron protocol
 var aeronSub = transport.Subscriber{}
@@ -39,7 +41,7 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("[WS] Creating web socket at", *wsEndpoint, "...")
 
-	c, err := websocket.Upgrade(w, r, nil, 0, 0)
+	c, err := websocket.Upgrade(w, r, nil, wsReadBufferSize, wsWriteBufferSize)
 	if err != nil {
 		log.Println("[WS] Failed to connect to web socket:", err)
 		return
@@ -81,7 +83,7 @@ func pushToAeron(message []byte) {
 		if result < 0 {
 			log.Printf("[AERON] Unrecognized result code: %d\n", result)
 		} else {
-			log.Println("[AERON] Success!")
+			log.Println("[AERON] Publishing message successful!")
 		}
 	}
 }
@@ -94,10 +96,13 @@ func pullFromAeron(c *websocket.Conn) {
 			switch message[2] {
 			case 'A':
 				// Accepted order
-				log.Println("[AERON] Received message: order accepted")
+				log.Println("[AERON] Received \"order accepted\" message!")
+			case 'J':
+				// Executed order
+				log.Println("[AERON] Received \"order rejected\" message!")
 			case 'E':
 				// Executed order
-				log.Println("[AERON] Received message: order executed")
+				log.Println("[AERON] Received \"order executed\" message!")
 			}
 		}
 		err := c.WriteMessage(websocket.BinaryMessage, message)
