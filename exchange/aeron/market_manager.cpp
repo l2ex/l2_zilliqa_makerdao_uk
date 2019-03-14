@@ -151,6 +151,8 @@ bool prepareMarketManager(Matching::MarketManager *market)
     result = result && reg(13, "USD_RUB");
     result = result && reg(14, "USD_RUB1");
     result = result && reg(777, "ZIL_DAI");
+    result = result && reg(778, "ETH_DAI");
+    result = result && reg(779, "ZIL_ETH");
     
     return result;
 }
