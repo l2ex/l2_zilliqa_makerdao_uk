@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/binary"
 	"flag"
+	"io/ioutil"
 	"log"
 	"math"
 	"net/url"
@@ -101,8 +102,15 @@ func main() {
 		makeOrderRequest.Price = 0x7FFFFFFF
 	}
 
-	// TODO: Implement global counter
-	makeOrderRequest.OrderID = 1
+	// TODO: Improve it somehow
+	var orderID uint32 = 1
+	lastOrderIDBytes, _ := ioutil.ReadFile("order_counter")
+	lastOrderID, _ := strconv.ParseUint(string(lastOrderIDBytes), 10, 32)
+	if lastOrderID > 0 {
+		orderID = uint32(lastOrderID) + 1
+	}
+	ioutil.WriteFile("order_counter", ([]byte)(strconv.FormatUint(uint64(orderID), 10)), 0644)
+	makeOrderRequest.OrderID = orderID
 
 	serialized, err := makeOrderRequest.Serialize()
 	if err != nil {
@@ -125,19 +133,5 @@ func main() {
 	if err != nil {
 		log.Println("[WS] Failed to write close message to web socket:", err)
 		return
-	}
-}
-
-func orderLog(c *websocket.Conn) {
-	for {
-		_, message, err := c.ReadMessage()
-		if err != nil {
-			log.Println("[WS] Failed to read message from web socket:", err)
-			return
-		}
-		// TODO
-		// create ordersLog.csv
-		// save all
-		log.Println("[WS] Message received:", message)
 	}
 }
