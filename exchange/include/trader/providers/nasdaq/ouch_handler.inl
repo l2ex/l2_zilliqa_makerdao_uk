@@ -13,8 +13,8 @@ namespace OUCH {
 
 inline size_t EnterOrderMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 43) && "Invalid size of the OUCH message type 'O'");
-    if (size != 43)
+    assert((size >= 43) && "Invalid size of the OUCH message type 'O'");
+    if (size < 43)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -36,8 +36,8 @@ inline size_t EnterOrderMessage::serialize(void *buffer, size_t size) const
 
 inline bool EnterOrderMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 43) && "Invalid size of the OUCH message type 'O'");
-    if (size != 43)
+    assert((size >= 43) && "Invalid size of the OUCH message type 'O'");
+    if (size < 43)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -77,8 +77,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const EnterOrderMessage&
 
 inline size_t ReplaceOrderMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 21) && "Invalid size of the OUCH message type 'U'");
-    if (size != 21)
+    assert((size >= 21) && "Invalid size of the OUCH message type 'U'");
+    if (size < 21)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -94,8 +94,8 @@ inline size_t ReplaceOrderMessage::serialize(void *buffer, size_t size) const
 
 inline bool ReplaceOrderMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 21) && "Invalid size of the OUCH message type 'U'");
-    if (size != 21)
+    assert((size >= 21) && "Invalid size of the OUCH message type 'U'");
+    if (size < 21)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -123,8 +123,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const ReplaceOrderMessag
 
 inline size_t CancelOrderMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 5) && "Invalid size of the OUCH message type 'X'");
-    if (size != 5)
+    assert((size >= 5) && "Invalid size of the OUCH message type 'X'");
+    if (size < 5)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -137,8 +137,8 @@ inline size_t CancelOrderMessage::serialize(void *buffer, size_t size) const
 
 inline bool CancelOrderMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 5) && "Invalid size of the OUCH message type 'X'");
-    if (size != 5)
+    assert((size >= 5) && "Invalid size of the OUCH message type 'X'");
+    if (size < 5)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -193,8 +193,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const UnknownMessage& me
 
 inline size_t SystemEventMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 10) && "Invalid size of the OUCH message type 'S'");
-    if (size != 10)
+    assert((size >= 10) && "Invalid size of the OUCH message type 'S'");
+    if (size < 10)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -208,8 +208,8 @@ inline size_t SystemEventMessage::serialize(void *buffer, size_t size) const
 
 inline bool SystemEventMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 10) && "Invalid size of the OUCH message type 'S'");
-    if (size != 10)
+    assert((size >= 10) && "Invalid size of the OUCH message type 'S'");
+    if (size < 10)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -233,8 +233,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const SystemEventMessage
 
 inline size_t OrderAcceptedMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 59) && "Invalid size of the OUCH message type 'A'");
-    if (size != 59)
+    assert((size >= 59) && "Invalid size of the OUCH message type 'A'");
+    if (size < 59)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -259,8 +259,8 @@ inline size_t OrderAcceptedMessage::serialize(void *buffer, size_t size) const
 
 inline bool OrderAcceptedMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 59) && "Invalid size of the OUCH message type 'A'");
-    if (size != 59)
+    assert((size >= 59) && "Invalid size of the OUCH message type 'A'");
+    if (size < 59)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -306,8 +306,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const OrderAcceptedMessa
 
 inline size_t OrderRejectedMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 14) && "Invalid size of the OUCH message type 'J'");
-    if (size != 14)
+    assert((size >= 14) && "Invalid size of the OUCH message type 'J'");
+    if (size < 14)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -322,8 +322,8 @@ inline size_t OrderRejectedMessage::serialize(void *buffer, size_t size) const
 
 inline bool OrderRejectedMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 14) && "Invalid size of the OUCH message type 'J'");
-    if (size != 14)
+    assert((size >= 14) && "Invalid size of the OUCH message type 'J'");
+    if (size < 14)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -349,8 +349,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const OrderRejectedMessa
 
 inline size_t OrderReplacedMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 43) && "Invalid size of the OUCH message type 'U'");
-    if (size != 43)
+    assert((size >= 43) && "Invalid size of the OUCH message type 'U'");
+    if (size < 43)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -370,8 +370,8 @@ inline size_t OrderReplacedMessage::serialize(void *buffer, size_t size) const
 
 inline bool OrderReplacedMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 43) && "Invalid size of the OUCH message type 'U'");
-    if (size != 43)
+    assert((size >= 43) && "Invalid size of the OUCH message type 'U'");
+    if (size < 43)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -407,8 +407,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const OrderReplacedMessa
 
 inline size_t OrderCanceledMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 22) && "Invalid size of the OUCH message type 'C'");
-    if (size != 22)
+    assert((size >= 22) && "Invalid size of the OUCH message type 'C'");
+    if (size < 22)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -424,8 +424,8 @@ inline size_t OrderCanceledMessage::serialize(void *buffer, size_t size) const
 
 inline bool OrderCanceledMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 22) && "Invalid size of the OUCH message type 'C'");
-    if (size != 22)
+    assert((size >= 22) && "Invalid size of the OUCH message type 'C'");
+    if (size < 22)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -453,8 +453,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const OrderCanceledMessa
 
 inline size_t OrderExecutedMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 38) && "Invalid size of the OUCH message type 'E'");
-    if (size != 38)
+    assert((size >= 38) && "Invalid size of the OUCH message type 'E'");
+    if (size < 38)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -473,8 +473,8 @@ inline size_t OrderExecutedMessage::serialize(void *buffer, size_t size) const
 
 inline bool OrderExecutedMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 38) && "Invalid size of the OUCH message type 'E'");
-    if (size != 38)
+    assert((size >= 38) && "Invalid size of the OUCH message type 'E'");
+    if (size < 38)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -508,8 +508,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const OrderExecutedMessa
 
 inline size_t BrokenTradeMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 22) && "Invalid size of the OUCH message type 'B'");
-    if (size != 22)
+    assert((size >= 22) && "Invalid size of the OUCH message type 'B'");
+    if (size < 22)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -525,8 +525,8 @@ inline size_t BrokenTradeMessage::serialize(void *buffer, size_t size) const
 
 inline bool BrokenTradeMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 22) && "Invalid size of the OUCH message type 'B'");
-    if (size != 22)
+    assert((size >= 22) && "Invalid size of the OUCH message type 'B'");
+    if (size < 22)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;

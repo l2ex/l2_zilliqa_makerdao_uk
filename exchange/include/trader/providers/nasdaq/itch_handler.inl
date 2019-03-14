@@ -13,8 +13,8 @@ namespace ITCH {
 
 inline size_t SystemEventMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 12) && "Invalid size of the ITCH message type 'S'");
-    if (size != 12)
+    assert((size >= 12) && "Invalid size of the ITCH message type 'S'");
+    if (size < 12)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -30,8 +30,8 @@ inline size_t SystemEventMessage::serialize(void *buffer, size_t size) const
 
 inline bool SystemEventMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 12) && "Invalid size of the ITCH message type 'S'");
-    if (size != 12)
+    assert((size >= 12) && "Invalid size of the ITCH message type 'S'");
+    if (size < 12)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -59,8 +59,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const SystemEventMessage
 
 inline size_t StockDirectoryMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 39) && "Invalid size of the ITCH message type 'R'");
-    if (size != 39)
+    assert((size >= 39) && "Invalid size of the ITCH message type 'R'");
+    if (size < 39)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -89,8 +89,8 @@ inline size_t StockDirectoryMessage::serialize(void *buffer, size_t size) const
 
 inline bool StockDirectoryMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 39) && "Invalid size of the ITCH message type 'R'");
-    if (size != 39)
+    assert((size >= 39) && "Invalid size of the ITCH message type 'R'");
+    if (size < 39)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -144,8 +144,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const StockDirectoryMess
 
 inline size_t StockTradingActionMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 25) && "Invalid size of the ITCH message type 'H'");
-    if (size != 25)
+    assert((size >= 25) && "Invalid size of the ITCH message type 'H'");
+    if (size < 25)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -164,8 +164,8 @@ inline size_t StockTradingActionMessage::serialize(void *buffer, size_t size) co
 
 inline bool StockTradingActionMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 25) && "Invalid size of the ITCH message type 'H'");
-    if (size != 25)
+    assert((size >= 25) && "Invalid size of the ITCH message type 'H'");
+    if (size < 25)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -199,8 +199,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const StockTradingAction
 
 inline size_t RegSHOMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 20) && "Invalid size of the ITCH message type 'Y'");
-    if (size != 20)
+    assert((size >= 20) && "Invalid size of the ITCH message type 'Y'");
+    if (size < 20)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -217,8 +217,8 @@ inline size_t RegSHOMessage::serialize(void *buffer, size_t size) const
 
 inline bool RegSHOMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 20) && "Invalid size of the ITCH message type 'Y'");
-    if (size != 20)
+    assert((size >= 20) && "Invalid size of the ITCH message type 'Y'");
+    if (size < 20)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -248,8 +248,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const RegSHOMessage& mes
 
 inline size_t MarketParticipantPositionMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 26) && "Invalid size of the ITCH message type 'L'");
-    if (size != 26)
+    assert((size >= 26) && "Invalid size of the ITCH message type 'L'");
+    if (size < 26)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -269,8 +269,8 @@ inline size_t MarketParticipantPositionMessage::serialize(void *buffer, size_t s
 
 inline bool MarketParticipantPositionMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 26) && "Invalid size of the ITCH message type 'L'");
-    if (size != 26)
+    assert((size >= 26) && "Invalid size of the ITCH message type 'L'");
+    if (size < 26)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -306,8 +306,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const MarketParticipantP
 
 inline size_t MWCBDeclineMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 35) && "Invalid size of the ITCH message type 'V'");
-    if (size != 35)
+    assert((size >= 35) && "Invalid size of the ITCH message type 'V'");
+    if (size < 35)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -325,8 +325,8 @@ inline size_t MWCBDeclineMessage::serialize(void *buffer, size_t size) const
 
 inline bool MWCBDeclineMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 35) && "Invalid size of the ITCH message type 'V'");
-    if (size != 35)
+    assert((size >= 35) && "Invalid size of the ITCH message type 'V'");
+    if (size < 35)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -358,8 +358,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const MWCBDeclineMessage
 
 inline size_t MWCBStatusMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 12) && "Invalid size of the ITCH message type 'W'");
-    if (size != 12)
+    assert((size >= 12) && "Invalid size of the ITCH message type 'W'");
+    if (size < 12)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -375,8 +375,8 @@ inline size_t MWCBStatusMessage::serialize(void *buffer, size_t size) const
 
 inline bool MWCBStatusMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 12) && "Invalid size of the ITCH message type 'W'");
-    if (size != 12)
+    assert((size >= 12) && "Invalid size of the ITCH message type 'W'");
+    if (size < 12)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -404,8 +404,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const MWCBStatusMessage&
 
 inline size_t IPOQuotingMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 28) && "Invalid size of the ITCH message type 'W'");
-    if (size != 28)
+    assert((size >= 28) && "Invalid size of the ITCH message type 'W'");
+    if (size < 28)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -424,8 +424,8 @@ inline size_t IPOQuotingMessage::serialize(void *buffer, size_t size) const
 
 inline bool IPOQuotingMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 28) && "Invalid size of the ITCH message type 'W'");
-    if (size != 28)
+    assert((size >= 28) && "Invalid size of the ITCH message type 'W'");
+    if (size < 28)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -459,8 +459,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const IPOQuotingMessage&
 
 inline size_t AddOrderMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 36) && "Invalid size of the ITCH message type 'A'");
-    if (size != 36)
+    assert((size >= 36) && "Invalid size of the ITCH message type 'A'");
+    if (size < 36)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -480,8 +480,8 @@ inline size_t AddOrderMessage::serialize(void *buffer, size_t size) const
 
 inline bool AddOrderMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 36) && "Invalid size of the ITCH message type 'A'");
-    if (size != 36)
+    assert((size >= 36) && "Invalid size of the ITCH message type 'A'");
+    if (size < 36)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -517,8 +517,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const AddOrderMessage& m
 
 inline size_t AddOrderMPIDMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 40) && "Invalid size of the ITCH message type 'F'");
-    if (size != 40)
+    assert((size >= 40) && "Invalid size of the ITCH message type 'F'");
+    if (size < 40)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -539,8 +539,8 @@ inline size_t AddOrderMPIDMessage::serialize(void *buffer, size_t size) const
 
 inline bool AddOrderMPIDMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 40) && "Invalid size of the ITCH message type 'F'");
-    if (size != 40)
+    assert((size >= 40) && "Invalid size of the ITCH message type 'F'");
+    if (size < 40)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -578,8 +578,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const AddOrderMPIDMessag
 
 inline size_t OrderExecutedMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 31) && "Invalid size of the ITCH message type 'E'");
-    if (size != 31)
+    assert((size >= 31) && "Invalid size of the ITCH message type 'E'");
+    if (size < 31)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -597,8 +597,8 @@ inline size_t OrderExecutedMessage::serialize(void *buffer, size_t size) const
 
 inline bool OrderExecutedMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 31) && "Invalid size of the ITCH message type 'E'");
-    if (size != 31)
+    assert((size >= 31) && "Invalid size of the ITCH message type 'E'");
+    if (size < 31)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -630,8 +630,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const OrderExecutedMessa
 
 inline size_t OrderExecutedWithPriceMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 36) && "Invalid size of the ITCH message type 'C'");
-    if (size != 36)
+    assert((size >= 36) && "Invalid size of the ITCH message type 'C'");
+    if (size < 36)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -651,8 +651,8 @@ inline size_t OrderExecutedWithPriceMessage::serialize(void *buffer, size_t size
 
 inline bool OrderExecutedWithPriceMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 36) && "Invalid size of the ITCH message type 'C'");
-    if (size != 36)
+    assert((size >= 36) && "Invalid size of the ITCH message type 'C'");
+    if (size < 36)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -688,8 +688,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const OrderExecutedWithP
 
 inline size_t OrderCancelMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 23) && "Invalid size of the ITCH message type 'X'");
-    if (size != 23)
+    assert((size >= 23) && "Invalid size of the ITCH message type 'X'");
+    if (size < 23)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -706,8 +706,8 @@ inline size_t OrderCancelMessage::serialize(void *buffer, size_t size) const
 
 inline bool OrderCancelMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 23) && "Invalid size of the ITCH message type 'X'");
-    if (size != 23)
+    assert((size >= 23) && "Invalid size of the ITCH message type 'X'");
+    if (size < 23)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -737,8 +737,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const OrderCancelMessage
 
 inline size_t OrderDeleteMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 19) && "Invalid size of the ITCH message type 'D'");
-    if (size != 19)
+    assert((size >= 19) && "Invalid size of the ITCH message type 'D'");
+    if (size < 19)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -754,8 +754,8 @@ inline size_t OrderDeleteMessage::serialize(void *buffer, size_t size) const
 
 inline bool OrderDeleteMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 19) && "Invalid size of the ITCH message type 'D'");
-    if (size != 19)
+    assert((size >= 19) && "Invalid size of the ITCH message type 'D'");
+    if (size < 19)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -783,8 +783,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const OrderDeleteMessage
 
 inline size_t OrderReplaceMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 35) && "Invalid size of the ITCH message type 'U'");
-    if (size != 35)
+    assert((size >= 35) && "Invalid size of the ITCH message type 'U'");
+    if (size < 35)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -803,8 +803,8 @@ inline size_t OrderReplaceMessage::serialize(void *buffer, size_t size) const
 
 inline bool OrderReplaceMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 35) && "Invalid size of the ITCH message type 'U'");
-    if (size != 35)
+    assert((size >= 35) && "Invalid size of the ITCH message type 'U'");
+    if (size < 35)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -838,8 +838,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const OrderReplaceMessag
 
 inline size_t TradeMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 44) && "Invalid size of the ITCH message type 'P'");
-    if (size != 44)
+    assert((size >= 44) && "Invalid size of the ITCH message type 'P'");
+    if (size < 44)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -860,8 +860,8 @@ inline size_t TradeMessage::serialize(void *buffer, size_t size) const
 
 inline bool TradeMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 44) && "Invalid size of the ITCH message type 'P'");
-    if (size != 44)
+    assert((size >= 44) && "Invalid size of the ITCH message type 'P'");
+    if (size < 44)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -899,8 +899,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const TradeMessage& mess
 
 inline size_t CrossTradeMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 40) && "Invalid size of the ITCH message type 'Q'");
-    if (size != 40)
+    assert((size >= 40) && "Invalid size of the ITCH message type 'Q'");
+    if (size < 40)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -920,8 +920,8 @@ inline size_t CrossTradeMessage::serialize(void *buffer, size_t size) const
 
 inline bool CrossTradeMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 40) && "Invalid size of the ITCH message type 'Q'");
-    if (size != 40)
+    assert((size >= 40) && "Invalid size of the ITCH message type 'Q'");
+    if (size < 40)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -957,8 +957,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const CrossTradeMessage&
 
 inline size_t BrokenTradeMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 19) && "Invalid size of the ITCH message type 'B'");
-    if (size != 19)
+    assert((size >= 19) && "Invalid size of the ITCH message type 'B'");
+    if (size < 19)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -974,8 +974,8 @@ inline size_t BrokenTradeMessage::serialize(void *buffer, size_t size) const
 
 inline bool BrokenTradeMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 19) && "Invalid size of the ITCH message type 'B'");
-    if (size != 19)
+    assert((size >= 19) && "Invalid size of the ITCH message type 'B'");
+    if (size < 19)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -1003,8 +1003,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const BrokenTradeMessage
 
 inline size_t NOIIMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 50) && "Invalid size of the ITCH message type 'I'");
-    if (size != 50)
+    assert((size >= 50) && "Invalid size of the ITCH message type 'I'");
+    if (size < 50)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -1028,8 +1028,8 @@ inline size_t NOIIMessage::serialize(void *buffer, size_t size) const
 
 inline bool NOIIMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 50) && "Invalid size of the ITCH message type 'I'");
-    if (size != 50)
+    assert((size >= 50) && "Invalid size of the ITCH message type 'I'");
+    if (size < 50)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -1073,8 +1073,8 @@ inline TOutputStream& operator<<(TOutputStream& stream, const NOIIMessage& messa
 
 inline size_t RPIIMessage::serialize(void *buffer, size_t size) const
 {
-    assert((size == 20) && "Invalid size of the ITCH message type 'N'");
-    if (size != 20)
+    assert((size >= 20) && "Invalid size of the ITCH message type 'N'");
+    if (size < 20)
         return 0;
 
     uint8_t* data = (uint8_t*)buffer;
@@ -1091,8 +1091,8 @@ inline size_t RPIIMessage::serialize(void *buffer, size_t size) const
 
 inline bool RPIIMessage::deserialize(void *buffer, size_t size)
 {
-    assert((size == 20) && "Invalid size of the ITCH message type 'N'");
-    if (size != 20)
+    assert((size >= 20) && "Invalid size of the ITCH message type 'N'");
+    if (size < 20)
         return false;
 
     uint8_t* data = (uint8_t*)buffer;

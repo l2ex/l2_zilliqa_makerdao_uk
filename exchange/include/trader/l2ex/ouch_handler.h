@@ -38,7 +38,15 @@ protected:
             );
             auto error = _market.AddOrder(order);
             if (error != Matching::ErrorCode::OK)
+            {
+                OUCH::OrderRejectedMessage rejected = {};
+                rejected.Type = 'J';
+                rejected.Timestamp = nanosecondsSinceMidnight();
+                rejected.OrderToken = message.OrderToken;
+                rejected.Reason = 'W'; // TODO
+                publishMessage(rejected);
                 return false;
+            }
         }
         else
         {
@@ -51,7 +59,15 @@ protected:
             );
             auto error = _market.AddOrder(order);
             if (error != Matching::ErrorCode::OK)
+            {
+                OUCH::OrderRejectedMessage rejected = {};
+                rejected.Type = 'J';
+                rejected.Timestamp = nanosecondsSinceMidnight();
+                rejected.OrderToken = message.OrderToken;
+                rejected.Reason = 'W'; // TODO
+                publishMessage(rejected);
                 return false;
+            }
         }
         return true;
     }
@@ -94,9 +110,30 @@ private:
     template <class Message>
     void publishMessage(const Message &message)
     {
-        auto length = message.serialize(_messageSerialized, sizeof(_messageSerialized));
-        if (length > 0 && _publisher)
-            _publisher->publish(_messageSerialized, length);
+        if (_publisher)
+        {
+            auto length = message.serialize(_messageSerialized + 2, sizeof(_messageSerialized) - 2);
+            if (length > 0)
+            {
+                CppCommon::Endian::WriteBigEndian(_messageSerialized, static_cast<uint16_t>(length));
+                _publisher->publish(_messageSerialized, length + 2);
+            }
+        }
+    }
+
+    std::chrono::system_clock::duration durationSinceMidnight() {
+        auto now = std::chrono::system_clock::now();
+        time_t tnow = std::chrono::system_clock::to_time_t(now);
+        tm *date = std::localtime(&tnow);
+        date->tm_hour = 0;
+        date->tm_min = 0;
+        date->tm_sec = 0;
+        auto midnight = std::chrono::system_clock::from_time_t(std::mktime(date));
+        return now - midnight;
+    }
+
+    uint64_t nanosecondsSinceMidnight() {
+        return std::chrono::duration_cast<std::chrono::nanoseconds>(durationSinceMidnight()).count();
     }
 
 private:

@@ -131,9 +131,12 @@ private:
     template <class Message>
     void publishMessage(const Message &message)
     {
-        auto length = message.serialize(_messageSerialized, sizeof(_messageSerialized));
-        if (length > 0 && _publisher)
-            _publisher->publish(_messageSerialized, length);
+        if (_publisher)
+        {
+            auto length = message.serialize(_messageSerialized, sizeof(_messageSerialized));
+            if (length > 0)
+                _publisher->publish(_messageSerialized, length);
+        }
     }
 
 private:

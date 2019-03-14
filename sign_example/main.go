@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"math/big"
 
 	"github.com/l2ex/go-engine/crypto/blockchains"
@@ -19,23 +19,23 @@ func main() {
 func exampleUpdateChannelMessageSerialization() {
 	etalon := "792db58835893e047189f4b6639eda85ac34113f33c21af6915e14f376a355c41def6610558d311bfffffffffffffffffffffffffffffffffffffffffffffffffffffffff75772800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000"
 	args := common.L2ArgsUpdateChannel{
-		Owner: utils.HexToBytesUnsafe("792db58835893e047189f4b6639eda85ac34113f"),
-		Token: utils.HexToBytesUnsafe("33c21af6915e14f376a355c41def6610558d311b"),
+		Owner:  utils.HexToBytesUnsafe("792db58835893e047189f4b6639eda85ac34113f"),
+		Token:  utils.HexToBytesUnsafe("33c21af6915e14f376a355c41def6610558d311b"),
 		Change: big.NewInt(-145264000),
-		Nonce: big.NewInt(1),
-		Apply: false,
-		Free: big.NewInt(0),
+		Nonce:  big.NewInt(1),
+		Apply:  false,
+		Free:   big.NewInt(0),
 	}
 	l2 := new(ethereum.L2)
 	data, err := l2.SerializeMessageUC(args)
 	handleError(err)
 	args2, err := l2.DeserializeMessageUC(data)
 	handleError(err)
-	fmt.Printf("L2 update channel arguments: %+v\n", args)
-	fmt.Printf("L2 update channel serialized: %#x\n", data)
-	fmt.Printf("L2 update channel deserialized: %+v\n", args2)
+	log.Printf("L2 update channel arguments: %+v\n", args)
+	log.Printf("L2 update channel serialized: %#x\n", data)
+	log.Printf("L2 update channel deserialized: %+v\n", args2)
 	if utils.HexFromBytes(data) != etalon {
-		fmt.Printf("ERROR: Wrong result received during update channel message serialization\n")
+		log.Printf("ERROR: Wrong result received during update channel message serialization\n")
 	}
 }
 
@@ -47,17 +47,17 @@ func exampleUpdateChannelMessageSignature() {
 	signature, err := ecc.SignData(data, privateKey, blockchains.EthereumMain)
 	handleError(err)
 	r, s, v := signature.GetNumbers()
-	fmt.Printf("L2 update channel signing: %s\n", signature.GetString())
-	fmt.Printf("L2 update channel signing (v): %d\n", v)
-	fmt.Printf("L2 update channel signing (r): %#x\n", r)
-	fmt.Printf("L2 update channel signing (s): %#x\n", s)
+	log.Printf("L2 update channel signing: %s\n", signature.GetString())
+	log.Printf("L2 update channel signing (v): %d\n", v)
+	log.Printf("L2 update channel signing (r): %#x\n", r)
+	log.Printf("L2 update channel signing (s): %#x\n", s)
 	if signature.GetString() != etalon {
-		fmt.Printf("ERROR: Wrong result received during update channel message signing\n")
+		log.Printf("ERROR: Wrong result received during update channel message signing\n")
 	}
 }
 
 func handleError(err error) {
 	if err != nil {
-		fmt.Printf("[ERROR] %s\n", err)
+		log.Printf("[ERROR] %s\n", err)
 	}
 }

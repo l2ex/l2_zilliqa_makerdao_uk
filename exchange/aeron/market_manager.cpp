@@ -66,7 +66,7 @@ int main(int argc, char **argv)
 
     // Create handlers and market manager
 
-    auto marketHandler = std::make_shared<MarketHandler>(nullptr, nullptr);
+    auto marketHandler = std::make_shared<MarketHandler>(nullptr, &(*ouchPublisher));
     auto market = std::make_shared<Matching::MarketManager>(*marketHandler);
     auto itchHandler = std::make_shared<ITCHHandler>(*market, &(*itchPublisher));
     auto ouchHandler = std::make_shared<OUCHHandler>(*market, &(*ouchPublisher));

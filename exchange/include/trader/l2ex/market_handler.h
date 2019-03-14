@@ -207,9 +207,12 @@ private:
     {
         if (!_itchPublisher)
             return;
-        auto length = message.serialize(_messageSerialized, sizeof(_messageSerialized));
+        auto length = message.serialize(_messageSerialized + 2, sizeof(_messageSerialized) - 2);
         if (length > 0)
-            _itchPublisher->publish(_messageSerialized, length);
+        {
+            CppCommon::Endian::WriteBigEndian(_messageSerialized, static_cast<uint16_t>(length));
+            _itchPublisher->publish(_messageSerialized, length + 2);
+        }
     }
 
     template <class Message>
@@ -217,9 +220,12 @@ private:
     {
         if (!_ouchPublisher)
             return;
-        auto length = message.serialize(_messageSerialized, sizeof(_messageSerialized));
+        auto length = message.serialize(_messageSerialized + 2, sizeof(_messageSerialized) - 2);
         if (length > 0)
-            _ouchPublisher->publish(_messageSerialized, length);
+        {
+            CppCommon::Endian::WriteBigEndian(_messageSerialized, static_cast<uint16_t>(length));
+            _ouchPublisher->publish(_messageSerialized, length + 2);
+        }
     }
 
     std::chrono::system_clock::duration durationSinceMidnight() {
