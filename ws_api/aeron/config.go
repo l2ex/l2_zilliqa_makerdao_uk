@@ -11,8 +11,8 @@ var Config = struct {
 	OrderBookStreamID *int
 	APIStreamID       *int
 }{
-	OrderBookChannel:  flag.String("C", "aeron:udp?endpoint=127.0.0.1:40570", "aeron channel endpoint used by orderbook subscriber"),
-	APIChannel:        flag.String("c", "aeron:udp?endpoint=127.0.0.1:40570", "aeron channel endpoint used by API subscriber"),
+	OrderBookChannel:  flag.String("C", "aeron:ipc", "aeron channel endpoint used by orderbook subscriber"),
+	APIChannel:        flag.String("c", "aeron:ipc", "aeron channel endpoint used by API subscriber"),
 	OrderBookStreamID: flag.Int("S", 1025, "aeron stream ID used by orderbook subscriber"),
 	APIStreamID:       flag.Int("s", 1024, "aeron stream ID used by API subscriber"),
 }
