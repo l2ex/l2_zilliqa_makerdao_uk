@@ -1,117 +1,120 @@
 package main
 
 import (
+	"encoding/binary"
 	"flag"
-	"log"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/lirm/aeron-go/aeron"
-	"github.com/lirm/aeron-go/aeron/atomic"
-	"github.com/lirm/aeron-go/aeron/idlestrategy"
-	"github.com/lirm/aeron-go/aeron/logbuffer"
+	"github.com/op/go-logging"
 
 	transport "../aeron"
+	"../common"
+	"../messages"
 )
 
+var logger = logging.MustGetLogger("ws-server")
+
 // Web socket related stuff
-var wsEndpoint = flag.String("addr", "0.0.0.0:2054", "web socket address")
+var wsEndpoint = flag.String("addr", "0.0.0.0:2054", "websocket address")
 var wsReadBufferSize = 1024
 var wsWriteBufferSize = 1024
 
-// Internal transport over Aeron protocol
-var aeronSub = transport.Subscriber{}
-var aeronPub = transport.Publisher{}
+var hub *common.Hub
+var publisher = &transport.Publisher{}
 
 func main() {
 	flag.Parse()
-	log.SetFlags(0)
 
-	aeronSub.Connect()
-	aeronPub.Connect()
-	defer aeronSub.Disconnect()
-	defer aeronPub.Disconnect()
+	hub = common.NewHub()
+	go hub.Run()
 
-	http.HandleFunc("/", httpHandler)
-	log.Fatal(http.ListenAndServe(*wsEndpoint, nil))
+	publisher.Connect()
+	defer publisher.Disconnect()
+
+	http.HandleFunc("/", wsHandler)
+	http.HandleFunc("/subscribe", func(w http.ResponseWriter, r *http.Request) {
+		wsListen(hub, w, r)
+	})
+	err := http.ListenAndServe(*wsEndpoint, nil)
+	if err != nil {
+		logger.Errorf("[ERROR] ListenAndServe failed with error: %s\n", err.Error())
+	}
 }
 
-func httpHandler(w http.ResponseWriter, r *http.Request) {
+func wsHandler(w http.ResponseWriter, r *http.Request) {
 
-	log.Println("[WS] Creating web socket at", *wsEndpoint, "...")
+	logger.Infof("Handling incoming websocket connection from %s...\n", r.RemoteAddr)
 
-	c, err := websocket.Upgrade(w, r, nil, wsReadBufferSize, wsWriteBufferSize)
+	conn, err := websocket.Upgrade(w, r, nil, wsReadBufferSize, wsWriteBufferSize)
 	if err != nil {
-		log.Println("[WS] Failed to connect to web socket:", err)
+		logger.Errorf("[ERROR] Unable to set up websocket connection from %s: %s\n", r.RemoteAddr, err.Error())
 		return
 	}
-	defer c.Close()
-
-	go pullFromAeron(c)
 
 	for {
-		_, message, err := c.ReadMessage()
+		messageType, message, err := conn.ReadMessage()
 		if err != nil {
-			log.Println("[WS] Failed to read message from web socket:", err)
+			if common.IsConnectionClosedUnexpectedly(err) {
+				logger.Errorf("[ERROR] Unable to read message from websocket: %s\n", err.Error())
+			} else {
+				logger.Infof("Websocket connection from %s is closed\n", r.RemoteAddr)
+			}
 			return
 		}
-
-		if len(message) > 2 {
-			switch message[2] {
-			case 'O':
-				// Make order
-				pushToAeron(message)
+		switch messageType {
+		case websocket.BinaryMessage:
+			if len(message) > 0 {
+				switch message[0] {
+				case 'O':
+					// Enter order message
+					m := &messages.EnterOrderMessage{}
+					err = m.Deserialize(message)
+					if err != nil {
+						logger.Errorf("[ERROR] Unable to deserialize received message EnterOrderMessage = %#x\n", message)
+						break
+					}
+					logger.Infof("[WebSocket] Message received: EnterOrderMessage = %+v\n", m)
+					sendToAeron(message)
+				}
 			}
 		}
 	}
 }
 
-func pushToAeron(message []byte) {
-	// if !aeronPub.Publication.IsConnected() {
-	// 	log.Println("[AERON] No subscribers detected")
-	// 	return
-	// }
-	copy(aeronPub.Buffer, message)
-	result := aeronPub.Publication.Offer(aeronPub.BufferAtomic, 0, int32(len(message)), nil)
+func wsListen(hub *common.Hub, w http.ResponseWriter, r *http.Request) {
+
+	logger.Infof("Handling incoming websocket subscribe connection from %s...\n", r.RemoteAddr)
+
+	conn, err := websocket.Upgrade(w, r, nil, wsReadBufferSize, wsWriteBufferSize)
+	if err != nil {
+		logger.Errorf("[ERROR] Unable to set up websocket subscribe connection from %s: %s\n", r.RemoteAddr, err.Error())
+		return
+	}
+
+	listener := &common.Listener{Hub: hub, Conn: conn, Send: make(chan []byte, 128)}
+	listener.Hub.Register <- listener
+
+	// Allow collection of memory referenced by the caller by doing all work in new goroutines
+	go listener.WritePump()
+	go listener.ReadPump()
+}
+
+func sendToAeron(message []byte) {
+	binary.BigEndian.PutUint16(publisher.Buffer[:2], uint16(len(message)))
+	copy(publisher.Buffer[2:], message)
+	result := publisher.Publication.Offer(publisher.BufferAtomic, 0, int32(len(message)+2), nil)
 	switch result {
 	case aeron.NotConnected:
-		log.Println("[AERON] Not connected yet")
+		logger.Error("[AERON] Publication failed: not connected yet\n")
 	case aeron.BackPressured:
-		log.Println("[AERON] Back pressured")
+		logger.Error("[AERON] Publication failed: back pressured\n")
 	default:
 		if result < 0 {
-			log.Printf("[AERON] Unrecognized result code: %d\n", result)
+			logger.Errorf("[AERON] Publication failed: unrecognized result code: %d\n", result)
 		} else {
-			log.Println("[AERON] Publishing message successful!")
+			logger.Error("[AERON] Publication successful!")
 		}
-	}
-}
-
-func pullFromAeron(c *websocket.Conn) {
-	idleStrategy := idlestrategy.Sleeping{SleepFor: time.Millisecond}
-	handler := func(buffer *atomic.Buffer, offset int32, length int32, header *logbuffer.Header) {
-		message := buffer.GetBytesArray(offset, length)
-		if len(message) > 2 {
-			switch message[2] {
-			case 'A':
-				// Accepted order
-				log.Println("[AERON] Received \"order accepted\" message!")
-			case 'J':
-				// Executed order
-				log.Println("[AERON] Received \"order rejected\" message!")
-			case 'E':
-				// Executed order
-				log.Println("[AERON] Received \"order executed\" message!")
-			}
-		}
-		err := c.WriteMessage(websocket.BinaryMessage, message)
-		if err != nil {
-			log.Println("[WS] Failed to send message:", err)
-		}
-	}
-	for {
-		fragmentsRead := aeronSub.Subscription.Poll(handler, 10)
-		idleStrategy.Idle(fragmentsRead)
 	}
 }

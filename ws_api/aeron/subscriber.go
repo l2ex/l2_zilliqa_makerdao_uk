@@ -18,13 +18,12 @@ type Subscriber struct {
 // Connect connects subscriber to Aeron channel.
 func (subscriber *Subscriber) Connect() error {
 
-	var err error
-
 	subscriber.logger = logging.MustGetLogger("aeron-subscriber")
 
 	keepAliveTimeout := time.Hour * 24 * 7
 	subscriber.Context = aeron.NewContext().MediaDriverTimeout(keepAliveTimeout)
 
+	var err error
 	subscriber.Transport, err = aeron.Connect(subscriber.Context)
 	if err != nil {
 		subscriber.logger.Errorf("Failed to connect to Aeron media driver: %s\n", err.Error())

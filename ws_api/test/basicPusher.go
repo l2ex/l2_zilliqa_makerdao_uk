@@ -21,7 +21,6 @@ import (
 	"encoding/binary"
 	"encoding/csv"
 	"flag"
-	"fmt"
 	"io"
 	"log"
 	"math"
@@ -240,6 +239,6 @@ func main() {
 			}
 		}
 
-		fmt.Printf("Time spent: %d seconds\n", time.Since(start)/1000000000)
+		log.Printf("Time spent: %d seconds\n", time.Since(start)/1000000000)
 	}
 }

@@ -2,120 +2,103 @@ package main
 
 import (
 	"flag"
-	"log"
 	"net/url"
 	"os"
 	"os/signal"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/op/go-logging"
+
+	"../common"
 )
 
+var logger = logging.MustGetLogger("ws-client")
+
 // Web socket related stuff
-var wsEndpoint = flag.String("addr", "localhost:2054", "web socket address")
+var wsEndpoint = flag.String("addr", "localhost:2054", "websocket address")
 var wsURL = url.URL{Scheme: "ws", Host: *wsEndpoint, Path: "/"}
 
 func main() {
 	flag.Parse()
-	log.SetFlags(0)
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	log.Println("[WS] Connecting to", wsURL.String(), "...")
+	logger.Infof("Connecting to websocket at address %s...\n", wsURL.String())
 
-	c, _, err := websocket.DefaultDialer.Dial(wsURL.String(), nil)
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL.String(), nil)
 	if err != nil {
-		log.Println("[WS] Failed to connect to web socket:", err)
+		logger.Errorf("[ERROR] Unable to connect to websocket: %s\n", err.Error())
 		return
 	}
-	defer c.Close()
+	defer conn.Close()
 
-	log.Println("60 second demo")
-	log.Println("Starting trading betwen 3 actors : Alice, Bob and MarketMaker")
-	log.Println("Ethereum Rinkeby channel contract: 0x59848c104012cE77cca6BAd9EF16d7278a1c112d")
-	log.Println("Zilliqa testnet channel contract: ")
-	log.Println("Initial Alice balance: ")
-	log.Println("Initial Bob balance: ")
+	logger.Infof("60 second demo\n")
+	logger.Infof("Starting trading betwen 3 actors : Alice, Bob and MarketMaker\n")
+	logger.Infof("Ethereum Rinkeby channel contract: 0x59848c104012cE77cca6BAd9EF16d7278a1c112d\n")
+	logger.Infof("Zilliqa testnet channel contract: \n")
+	logger.Infof("Initial Alice balance: \n")
+	logger.Infof("Initial Bob balance: \n")
 
 	// Trading demo
-	go alice(c)
-	go bob(c)
-	go marketMaker(c)
-	go orderLog(c)
-
-	done := make(chan struct{})
-	defer close(done)
+	go alice(conn)
+	go bob(conn)
+	go marketMaker(conn)
+	go orderLog(conn)
 
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 
 	for {
 		select {
-		case <-done:
-			return
 		case <-time.After(60 * time.Second):
-			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-			if err != nil {
-				log.Println("[WS] Failed to write close message to web socket:", err)
-				return
-			}
+			common.CloseConnection(conn, logger)
+			return
 		case t := <-ticker.C:
-			err := c.WriteMessage(websocket.TextMessage, []byte(t.String()))
+			err := conn.WriteMessage(websocket.TextMessage, []byte(t.String()))
 			if err != nil {
-				log.Println("[WS] Failed to write tick time message to web socket:", err)
+				logger.Errorf("[ERROR] Unable to write tick time message to websocket: %s\n", err.Error())
 				return
 			}
 		case <-interrupt:
-			log.Println("[WS] Interrupt signal handled")
-
-			// Cleanly close the connection by sending a close message and then
-			// waiting (with timeout) for the server to close the connection.
-			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-			if err != nil {
-				log.Println("[WS] Failed to write close message to web socket:", err)
-				return
-			}
-			select {
-			case <-done:
-			case <-time.After(time.Second):
-			}
+			logger.Infof("Interrupt signal handled\n")
+			common.CloseConnection(conn, logger)
 			return
-
 		}
 	}
 }
 
-func alice(c *websocket.Conn) {
+func alice(conn *websocket.Conn) {
 	// TODO
 	// open data file aliceorders.ouch
 	// send all orders with random delay
 
 }
 
-func bob(c *websocket.Conn) {
+func bob(conn *websocket.Conn) {
 	// TODO
 	// open data file bobrders.ouch
 	// send with random delay
 
 }
 
-func marketMaker(c *websocket.Conn) {
+func marketMaker(conn *websocket.Conn) {
 	// post orders buy
 	// post orders sell
 	// send 60 times
 }
 
-func orderLog(c *websocket.Conn) {
+func orderLog(conn *websocket.Conn) {
 	for {
-		_, message, err := c.ReadMessage()
+		_, message, err := conn.ReadMessage()
 		if err != nil {
-			log.Println("[WS] Failed to read message from web socket:", err)
+			logger.Errorf("[ERROR] Unable to read message from websocket: %s\n", err.Error())
 			return
 		}
 		// TODO
 		// create ordersLog.csv
 		// save all
-		log.Println("[WS] Message received:", message)
+		logger.Infof("[WebSocket] Message received: %#x\n", message)
 	}
 }

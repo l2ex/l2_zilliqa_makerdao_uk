@@ -1,22 +1,24 @@
 package main
 
 import (
-	"encoding/binary"
 	"flag"
 	"io/ioutil"
-	"log"
 	"math"
 	"net/url"
 	"os"
 	"strconv"
 
 	"github.com/gorilla/websocket"
+	"github.com/op/go-logging"
 
+	"../common"
 	"../messages"
 )
 
+var logger = logging.MustGetLogger("ws-cli")
+
 // Web socket related stuff
-var wsEndpoint = flag.String("addr", "localhost:2054", "web socket address")
+var wsEndpoint = flag.String("addr", "localhost:2054", "websocket address")
 var wsURL = url.URL{Scheme: "ws", Host: *wsEndpoint, Path: "/"}
 
 // Commands
@@ -37,7 +39,7 @@ func main() {
 	switch cliCommand {
 	case "makeOrder":
 	default:
-		log.Println("[ERROR] Unsupported command specified:", cliCommand)
+		logger.Errorf("[ERROR] Unsupported command specified: %s\n", cliCommand)
 		return
 	}
 
@@ -49,7 +51,7 @@ func main() {
 	case "charlie":
 		message.AccountID = 3
 	default:
-		log.Println("[ERROR] Unsupported account specified:", cliAccount)
+		logger.Errorf("[ERROR] Unsupported account specified: %s\n", cliAccount)
 		return
 	}
 
@@ -61,7 +63,7 @@ func main() {
 	case "ZIL_ETH":
 		message.OrderBookID = messages.OrderBookID_ZIL_ETH
 	default:
-		log.Println("[ERROR] Unsupported symbol specified:", cliSymbol)
+		logger.Errorf("[ERROR] Unsupported symbol specified: %s\n", cliSymbol)
 		return
 	}
 
@@ -71,7 +73,7 @@ func main() {
 	case "market":
 		message.OrderType = messages.OrderTypeMarket
 	default:
-		log.Println("[ERROR] Unsupported order type specified:", cliOrderType)
+		logger.Errorf("[ERROR] Unsupported order type specified: %s\n", cliOrderType)
 		return
 	}
 
@@ -81,20 +83,20 @@ func main() {
 	case "sell":
 		message.OrderSide = messages.OrderSideSell
 	default:
-		log.Println("[ERROR] Unsupported order side specified:", cliOrderSide)
+		logger.Errorf("[ERROR] Unsupported order side specified: %s\n", cliOrderSide)
 		return
 	}
 
 	message.Quantity, err = strconv.ParseUint(cliOrderQuantity, 10, 64)
 	if err != nil {
-		log.Println("[ERROR] Invalid order quantity specified:", cliOrderQuantity)
+		logger.Errorf("[ERROR] Invalid order quantity specified: %s\n", cliOrderQuantity)
 		return
 	}
 
 	if message.OrderType == messages.OrderTypeLimit {
 		price, err := strconv.ParseFloat(cliOrderPrice, 64)
 		if err != nil {
-			log.Println("[ERROR] Invalid order price specified:", cliOrderPrice)
+			logger.Errorf("[ERROR] Invalid order price specified: %s\n", cliOrderPrice)
 			return
 		}
 		message.Price = uint32(math.Round(price * 1000))
@@ -112,26 +114,24 @@ func main() {
 	ioutil.WriteFile("order_counter", ([]byte)(strconv.FormatUint(uint64(orderID), 10)), 0644)
 	message.OrderID = orderID
 
-	c, _, err := websocket.DefaultDialer.Dial(wsURL.String(), nil)
-	if err != nil {
-		log.Println("[WS] Failed to connect to web socket:", err)
-		return
-	}
-	defer c.Close()
-
 	messageBytes, err := message.Serialize()
 	if err != nil {
-		log.Println("[ERROR] Unable to serialize message:", message)
+		logger.Errorf("[ERROR] Unable to serialize message: %s\n", message)
 		return
 	}
 
-	messagePrefixed := make([]byte, len(messageBytes)+2)
-	binary.BigEndian.PutUint16(messagePrefixed[:2], uint16(len(messageBytes)))
-	copy(messagePrefixed[2:], messageBytes)
-
-	err = c.WriteMessage(websocket.BinaryMessage, messagePrefixed)
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL.String(), nil)
 	if err != nil {
-		log.Println("[WS] Failed to write close message to web socket:", err)
+		logger.Errorf("[ERROR] Unable to connect to websocket: %s\n", err.Error())
 		return
 	}
+	defer conn.Close()
+
+	err = conn.WriteMessage(websocket.BinaryMessage, messageBytes)
+	if err != nil {
+		logger.Errorf("[ERROR] Unable to write message to websocket: %s\n", err.Error())
+		return
+	}
+
+	common.CloseConnection(conn, nil)
 }
