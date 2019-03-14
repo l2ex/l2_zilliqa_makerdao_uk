@@ -39,9 +39,6 @@ func NewHub() *Hub {
 }
 
 func (hub *Hub) Run() {
-	hub.subscriber.Connect()
-	defer hub.subscriber.Disconnect()
-
 	go hub.listenAeron()
 
 	for {
@@ -67,9 +64,11 @@ func (hub *Hub) Run() {
 }
 
 func (hub *Hub) listenAeron() {
+	hub.subscriber.Connect()
+	defer hub.subscriber.Disconnect()
+
 	handler := func(buffer *atomic.Buffer, offset int32, length int32, header *logbuffer.Header) {
 		message := buffer.GetBytesArray(offset, length)
-		hub.logger.Infof("[AERON] %#x\n", message)
 		if len(message) > 2 {
 			switch message[2] {
 			case 'A':
@@ -89,6 +88,7 @@ func (hub *Hub) listenAeron() {
 			hub.Broadcast <- message[2:]
 		}
 	}
+
 	idleStrategy := idlestrategy.Sleeping{SleepFor: time.Millisecond}
 	for {
 		fragmentsRead := hub.subscriber.Subscription.Poll(handler, 10)
