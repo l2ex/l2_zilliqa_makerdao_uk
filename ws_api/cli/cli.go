@@ -16,7 +16,7 @@ import (
 )
 
 // Web socket related stuff
-var wsEndpoint = flag.String("addr", "137.116.73.73:2054", "web socket address")
+var wsEndpoint = flag.String("addr", "localhost:2054", "web socket address")
 var wsURL = url.URL{Scheme: "ws", Host: *wsEndpoint, Path: "/"}
 
 // Commands
